@@ -63,3 +63,5 @@ local.properties
 .springBeans
 
 .DS_Store
+src/typescript
+src/tests/TRACE
