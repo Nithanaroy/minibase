@@ -18,7 +18,7 @@ DOCFILES=bufmgr diskmgr global chainexception heap btree iterator index
 
 ##############  update the above for each assignment in making
 
-ASSIGN=/Users/nitinpasumarthy/Downloads/minjava/javaminibase
+ASSIGN=/Volumes/350GB/Documents/workspace/minibase
 LIBDIR=$(ASSIGN)/lib
 KEY=$(ASSIGN)/key
 SRC=$(ASSIGN)/src
