@@ -425,11 +425,17 @@ public class BufMgr implements GlobalConst {
 				replacer = new LRU(this);
 				System.out.println("Replacer: LRU\n");
 			} else if (replacerArg.compareTo("MRU") == 0) {
-				replacer = new LRU(this);
+				replacer = new MRU(this);
 				System.out.println("Replacer: MRU\n");
 			} else if (replacerArg.compareTo("FIFO") == 0) {
 				replacer = new FIFO(this);
 				System.out.println("Replacer: FIFO\n");
+			} else if (replacerArg.compareTo("LIFO") == 0) {
+				replacer = new LIFO(this);
+				System.out.println("Replacer: LIFO\n");
+			} else if (replacerArg.compareTo("LRUK") == 0) {
+				replacer = new LRUK(this);
+				System.out.println("Replacer: LRUK\n");
 			} else {
 				replacer = new Clock(this);
 				System.out.println("Replacer:Unknown, Use Clock\n");
@@ -479,7 +485,11 @@ public class BufMgr implements GlobalConst {
 
 		if (frameNo < 0) { // Not in the buffer pool
 
-			frameNo = replacer.pick_victim(); // frameNo is pinned
+			if (replacer.name().equals("LRUK")) {
+				frameNo = replacer.pick_victim_for_page(pin_pgid); // frameNo is pinned
+			} else {
+				frameNo = replacer.pick_victim(); // frameNo is pinned
+			}
 			if (frameNo < 0) {
 				page = null;
 				throw new ReplacerException(null, "BUFMGR: REPLACER_ERROR.");
@@ -753,6 +763,10 @@ public class BufMgr implements GlobalConst {
 		return frmeTable;
 	}
 
+	public BufHashTbl hshTable() {
+		return hashTable;
+	}
+
 	private void write_page(PageId pageno, Page page) throws BufMgrException {
 
 		try {
@@ -792,6 +806,10 @@ public class BufMgr implements GlobalConst {
 		}
 
 	} // end of deallocate_page
+
+	public Replacer getReplacer() {
+		return replacer;
+	}
 
 }
 

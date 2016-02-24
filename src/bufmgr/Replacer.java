@@ -1,6 +1,7 @@
 package bufmgr;
 
-import global.*;
+import global.GlobalConst;
+import global.PageId;
 
 /** This interface assocaites with the replace algorithm,
  * it describs if a buffer frame page is pinned, unpinned,
@@ -99,6 +100,11 @@ abstract class Replacer implements GlobalConst
   /** Must pin the returned frame. */
   public abstract int pick_victim() throws BufferPoolExceededException, PagePinnedException;     
  
+  /** Used by LRUK */
+  public int pick_victim_for_page(PageId id) throws BufferPoolExceededException, PagePinnedException {
+	  return pick_victim();
+  }
+  
   /** Retruns the name of the replacer algorithm. */
   public abstract String name();
 
