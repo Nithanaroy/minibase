@@ -45,10 +45,21 @@ public class LRUK extends Replacer {
 	@Override
 	public int pick_victim_for_page(PageId new_page) throws BufferPoolExceededException, PagePinnedException {
 		long t = System.currentTimeMillis();
+		int victim_frame = -1;
+
 		long min = t;
 		PageId victim = null;
-		for (PageId page : getPages()) {
+		PageId pages[] = getPages();
+		for (int i = 0; i < pages.length; i++) {
+			PageId page = pages[i];
 			int q = page.pid;
+
+			if (q == -1) {
+				victim_frame = i;
+				victim = page;
+				break;
+			}
+
 			int frame = mgr.hshTable().lookup(page);
 			if (t - LAST(q) > CORRELATED_REF_PERIOD && state_bit[frame].state != Pinned && HIST(q, K) < min) {
 				victim = page;
@@ -58,7 +69,9 @@ public class LRUK extends Replacer {
 		if (victim == null)
 			return -1;
 
-		int victim_frame = mgr.hshTable().lookup(victim); // get frame number from victim page
+		if (victim_frame == -1)
+			victim_frame = mgr.hshTable().lookup(victim); // get frame number from victim page
+
 		state_bit[victim_frame].state = Pinned;
 		(mgr.frameTable())[victim_frame].pin();
 
@@ -142,7 +155,9 @@ public class LRUK extends Replacer {
 	 * @param i 1 based index
 	 */
 	public long HIST(int pagenumber, int i) {
-		return _HIST.get(pagenumber)[i - 1];
+		if (_HIST.containsKey(pagenumber))
+			return _HIST.get(pagenumber)[i - 1];
+		return -1;
 	}
 
 	private void setLAST(int pagenumber, long v) {
@@ -161,7 +176,8 @@ public class LRUK extends Replacer {
 	 * @return
 	 */
 	public long back(int pagenumber, int k) {
-		return System.currentTimeMillis() - HIST(pagenumber, k);
+		// return System.currentTimeMillis() - HIST(pagenumber, k); // TODO
+		return HIST(pagenumber, k);
 	}
 
 }

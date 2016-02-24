@@ -32,7 +32,7 @@ public class LIFO extends Replacer {
 			return frame;
 		}
 
-		for (int i = numBuffers - 1; i >= 0; ++i) {
+		for (int i = numBuffers - 1; i >= 0; i--) {
 			frame = frames.get(i);
 			if (state_bit[frame].state != Pinned) {
 				state_bit[frame].state = Pinned;
