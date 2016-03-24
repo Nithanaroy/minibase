@@ -383,6 +383,7 @@ class JoinsDriver implements GlobalConst {
     Query4();
     Query5();
     Query6();
+    Query8();
     
     
     System.out.print ("Finished joins testing"+"\n");
@@ -1674,6 +1675,184 @@ class JoinsDriver implements GlobalConst {
       
     }
   
+private void Query8_CondExpr(CondExpr[] expr) {
+
+	  	expr[0].next  = null;
+	    expr[0].op    = new AttrOperator(AttrOperator.aopGT);
+	    expr[0].type1 = new AttrType(AttrType.attrSymbol);
+	    expr[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),1);
+	    expr[0].type2 = new AttrType(AttrType.attrSymbol);
+	    expr[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
+	    expr[1] = null;
+    }
+
+  
+  public void Query8()
+  {
+	  System.out.print("**********************Query8 strating *********************\n");
+      boolean status = OK;
+      
+      CondExpr [] outFilter  = new CondExpr[3];
+      outFilter[0] = new CondExpr();
+      outFilter[1] = new CondExpr();
+      outFilter[2] = new CondExpr();
+      
+      Query8_CondExpr(outFilter);
+ 
+      AttrType Stypes[] = {
+    	      new AttrType(AttrType.attrInteger),
+    	      new AttrType(AttrType.attrString),
+    	      new AttrType(AttrType.attrInteger),
+    	      new AttrType(AttrType.attrReal)
+    	    };
+    	    short []   Ssizes = new short[1];
+    	    Ssizes[0] = 30;
+
+    	    AttrType [] Rtypes = {
+    	      new AttrType(AttrType.attrInteger),
+    	      new AttrType(AttrType.attrInteger),
+    	      new AttrType(AttrType.attrString),
+    	    };
+    	    short  []  Rsizes = new short[1];
+    	    Rsizes[0] =15;
+
+    	    FldSpec [] Sprojection = {
+    	    	       new FldSpec(new RelSpec(RelSpec.outer), 1),
+    	    	       new FldSpec(new RelSpec(RelSpec.outer), 2),
+    	    	       new FldSpec(new RelSpec(RelSpec.outer), 3),
+    	    	       new FldSpec(new RelSpec(RelSpec.outer), 4)
+    	    	    };
+
+		    CondExpr[] selects = new CondExpr [1];
+		    selects = null;
+    	    
+    	    iterator.Iterator am = null;
+    	    try {
+    	      am  = new FileScan("sailors.in", Stypes, Ssizes,
+    					  (short)4, (short) 4,
+    					  Sprojection, null);
+    	    }
+    	    catch (Exception e) {
+    	      status = FAIL;
+    	      System.err.println (""+e);
+    	    }
+    	 
+    	    if (status != OK) {
+    	      //bail out
+    	      System.err.println ("*** Error setting up scan for sailors");
+    	      Runtime.getRuntime().exit(1);
+    	    }
+
+    	    FldSpec [] Rprojection = {
+    	       new FldSpec(new RelSpec(RelSpec.outer), 1),
+    	       new FldSpec(new RelSpec(RelSpec.outer), 2),
+    	       new FldSpec(new RelSpec(RelSpec.outer), 3)
+    	    }; 
+    	 
+    	    iterator.Iterator am2 = null;
+    	    try {
+    	      am2 = new FileScan("reserves.in", Rtypes, Rsizes, 
+    					  (short)3, (short)3,
+    					  Rprojection, null);
+    	    }
+    	    catch (Exception e) {
+    	      status = FAIL;
+    	      System.err.println (""+e);
+    	    }
+    	    
+    	    if (status != OK) {
+    	      //bail out
+    	      System.err.println ("*** Error setting up scan for reserves");
+    	      Runtime.getRuntime().exit(1);
+    	    }
+
+    	    FldSpec [] proj_list = {
+    	      new FldSpec(new RelSpec(RelSpec.outer), 2)
+    	    };
+
+    	    AttrType [] jtype     = { new AttrType(AttrType.attrString) };
+      
+      
+      NestedLoopsJoins inl = null;
+      
+      
+      try {
+	inl = new NestedLoopsJoins (Stypes, 4, Ssizes,
+				    Rtypes, 3, Rsizes,
+				    10,
+				  am, "reserves.in",
+				    outFilter, null, proj_list, 1);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for nested_loop_join");
+	System.err.println (""+e);
+	e.printStackTrace();
+	Runtime.getRuntime().exit(1);
+      }
+      
+      
+	System.out.print( "After sorting the output tuples.\n");
+	   
+	Tuple t = new Tuple();
+	t = null;
+	AttrType [] Jtypes = {
+			new AttrType(AttrType.attrString), 
+			new AttrType(AttrType.attrInteger), 
+		      };
+		      
+		      short  []  Jsizes = new short[1];
+		      Jsizes[0] = 30;
+		      AttrType [] JJtype = {
+			new AttrType(AttrType.attrString), 
+		      };
+		      
+		      short [] JJsize = new short[1];
+		      JJsize[0] = 30; 
+		
+		      
+		      TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+		      Sort sort_names = null;
+		      try {
+			sort_names = new Sort (JJtype,(short)1, JJsize,
+					       (iterator.Iterator) inl, 1, ascending, JJsize[0], 10);
+		      }
+		      catch (Exception e) {
+			System.err.println ("*** Error preparing for sorting");
+			System.err.println (""+e);
+			Runtime.getRuntime().exit(1);
+		      }
+		      
+      try {
+	while ((t =sort_names.get_next()) !=null) {
+	  t.print(JJtype);
+	//  qcheck6.Check(t);
+	}
+      }catch (Exception e) {
+	System.err.println ("*** Error preparing for get_next tuple");
+	System.err.println (""+e);
+	Runtime.getRuntime().exit(1);
+      }
+      
+//      qcheck6.report(6);
+      
+      System.out.println ("\n"); 
+      try {
+	sort_names.close();
+      }
+      catch (Exception e) {
+	status = FAIL;
+	e.printStackTrace();
+      }
+      
+      if (status != OK) {
+	//bail out
+	
+	Runtime.getRuntime().exit(1);
+      }
+  }
+
+
+
   
   private void Disclaimer() {
     System.out.print ("\n\nAny resemblance of persons in this database to"
@@ -1683,6 +1862,10 @@ class JoinsDriver implements GlobalConst {
          + "developers...\n\n");
   }
 }
+
+
+
+
 
 public class JoinTest
 {
