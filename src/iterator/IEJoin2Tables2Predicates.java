@@ -44,7 +44,7 @@ public class IEJoin2Tables2Predicates {
 		bp = new int[l1p.length];
 	}
 
-	public ArrayList<MyTuple[]> iejoin() {
+	public ArrayList<MyTuple[]> run() {
 		ArrayList<MyTuple[]> join_result = new ArrayList<>();
 		Comparator<MyTuple> ascDuration = new Comparator<MyTuple>() {
 			@Override
@@ -100,18 +100,18 @@ public class IEJoin2Tables2Predicates {
 		};
 
 		// Compute L1, L1', L2, L2'
-		if (op1 == 3 || op1 == 2) {
+		if (op1 == 4 || op1 == 2) {
 			Arrays.sort(L1, descDuration);
 			Arrays.sort(L1p, descDuration);
-		} else if (op1 == 1 || op1 == 4) {
+		} else if (op1 == 1 || op1 == 3) {
 			Arrays.sort(L1, ascDuration);
 			Arrays.sort(L1p, ascDuration);
 		}
 
-		if (op2 == 3 || op2 == 2) {
+		if (op2 == 4 || op2 == 2) {
 			Arrays.sort(L2, ascCost);
 			Arrays.sort(L2p, ascCost);
-		} else if (op2 == 1 || op2 == 4) {
+		} else if (op2 == 1 || op2 == 3) {
 			Arrays.sort(L2, descCost);
 			Arrays.sort(L2p, descCost);
 		}
@@ -119,10 +119,10 @@ public class IEJoin2Tables2Predicates {
 		// Compute permutation arrays - P, P'
 		int i = 0;
 		for (MyTuple myTuple : L2)
-			p[i++] = Arrays.binarySearch(L1, myTuple.id); // MyTuple implements Comparable
+			p[i++] = findId(L1, myTuple.id); // MyTuple implements Comparable
 		i = 0;
 		for (MyTuple myTuple : L2p)
-			pp[i++] = Arrays.binarySearch(L1p, myTuple.id); // MyTuple implements Comparable
+			pp[i++] = findId(L1p, myTuple.id); // MyTuple implements Comparable
 
 		// Compute offset arrays - O1, O2
 		i = 0;
@@ -142,8 +142,8 @@ public class IEJoin2Tables2Predicates {
 
 		// Visit
 		for (i = 0; i < m; i++) {
-			int off2 = o2[i];
-			for (int j = Math.max(0, o2[i - 1]); j <= o2[i]; j++) { // TODO: Check if equality is required
+			// int off2 = o2[i];
+			for (int j = o2[Math.max(0, i - 1)]; j <= Math.min(o2[i], n - 1); j++) {
 				bp[pp[j]] = 1;
 			}
 			int off1 = o1[p[i]];
@@ -159,44 +159,104 @@ public class IEJoin2Tables2Predicates {
 
 	}
 
-	/**
-	 * Finds the val in a
-	 * 
-	 * @param a
-	 * @param val
-	 * @return
-	 */
-	private int findDurationOffset(MyTuple[] a, int val) {
+	private int findId(MyTuple[] a, int id) {
 		int i = 0;
 		for (MyTuple myTuple : a) {
-			if (val < myTuple.duration) {
+			if (myTuple.id == id)
 				return i;
-			}
 			i++;
 		}
-		return i;
+		return -1;
 	}
 
 	/**
-	 * Finds the val in a
+	 * Finds the position of val in a if found, else position where it would have been found
+	 * Checks duration attribute of the tuple
 	 * 
-	 * @param a
-	 * @param val
-	 * @return
+	 * @param a Array in which val has to be found
+	 * @param val value to be searched
+	 * @return index of val in a (if it would have been present)
+	 */
+	private int findDurationOffset(MyTuple[] a, int val) {
+		// Assumption: 'a' has at least one element
+		if (a[0].duration <= a[a.length - 1].duration) {
+			// a is sorted in ascending order
+			int i = 0;
+			for (MyTuple myTuple : a) {
+				if (val <= myTuple.duration) {
+					return i;
+				}
+				i++;
+			}
+			return i;
+		} else {
+			int i = 0;
+			for (MyTuple myTuple : a) {
+				if (val >= myTuple.duration) {
+					return i;
+				}
+				i++;
+			}
+			return i;
+		}
+	}
+
+	/**
+	 * Finds the position of val in a if found, else position where it would have been found
+	 * Checks cost attribute of the tuple
+	 * 
+	 * @param a Array in which val has to be found
+	 * @param val value to be searched
+	 * @return index of val in a (if it would have been present)
 	 */
 	private int findCostOffset(MyTuple[] a, int val) {
-		int i = 0;
-		for (MyTuple myTuple : a) {
-			if (val < myTuple.cost) {
-				return i;
+		// Assumption: 'a' has at least one element
+		if (a[0].cost <= a[a.length - 1].cost) {
+			// a is sorted in ascending order
+			int i = 0;
+			for (MyTuple myTuple : a) {
+				if (val <= myTuple.cost) {
+					return i;
+				}
+				i++;
 			}
-			i++;
+			return i;
+		} else {
+			int i = 0;
+			for (MyTuple myTuple : a) {
+				if (val >= myTuple.cost) {
+					return i;
+				}
+				i++;
+			}
+			return i;
 		}
-		return i;
 	}
 
 	public static void main(String[] args) {
-		// Test the class here
+		// Table T
+		MyTuple t1 = new MyTuple(100, 140, 9);
+		MyTuple t2 = new MyTuple(101, 100, 12);
+		MyTuple t3 = new MyTuple(102, 90, 5);
+
+		// Table T'
+		MyTuple tp1 = new MyTuple(404, 100, 6);
+		MyTuple tp2 = new MyTuple(498, 140, 11);
+		MyTuple tp3 = new MyTuple(676, 80, 10);
+		MyTuple tp4 = new MyTuple(742, 90, 7);
+
+		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
+		IEJoin2Tables2Predicates iejoin = new IEJoin2Tables2Predicates(new MyTuple[] { t1, t2, t3 }, new MyTuple[] { t1, t2, t3 },
+				new MyTuple[] { tp1, tp2, tp3, tp4 }, new MyTuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 1, 4);
+		// TODO: Incorrect answer for the below case
+		iejoin = new IEJoin2Tables2Predicates(new MyTuple[] { t1, t2, t3 }, new MyTuple[] { t1, t2, t3 },
+				new MyTuple[] { tp1, tp2, tp3, tp4 }, new MyTuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
+
+		ArrayList<MyTuple[]> result = iejoin.run();
+		for (MyTuple[] myTuples : result) {
+			System.out.format("[%s, %s]\n", myTuples[0], myTuples[1]);
+		}
+
 	}
 
 }
