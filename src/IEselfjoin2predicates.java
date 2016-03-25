@@ -16,18 +16,16 @@ import java.util.Vector;
 public class IEselfjoin2predicates {
 	MyTuple[] L1;
 	MyTuple[] L2;
-	int m;
 	int n;
 	int op1;
 	int op2;
 
 	private int[] p,bp;
 
-	public IEselfjoin2predicates(MyTuple[] l1, MyTuple[] l2, int m, int n, int op1, int op2) {
+	public IEselfjoin2predicates(MyTuple[] l1, MyTuple[] l2, int n,int op1, int op2) {
 		super();
 		L1 = l1;
 		L2 = l2;
-		this.m = m;
 		this.n = n;
 		this.op1 = op1;
 		this.op2 = op2;
@@ -36,7 +34,7 @@ public class IEselfjoin2predicates {
 		bp = new int[l1.length];
 	}
 
-	public /*ArrayList<MyTuple[]>*/ void iejoin() {
+	public ArrayList<MyTuple[]> run() {
 		ArrayList<MyTuple[]> join_result = new ArrayList<>();
 		Comparator<MyTuple> ascDuration = new Comparator<MyTuple>() {
 			@Override
@@ -92,15 +90,15 @@ public class IEselfjoin2predicates {
 		};
 
 		// Compute L1,L2
-		if (op1 == 3 || op1 == 2) {
+		if (op1 == 4 || op1 == 2) {
 			Arrays.sort(L1, descDuration);
-		} else if (op1 == 1 || op1 == 4) {
+		} else if (op1 == 1 || op1 == 3) {
 			Arrays.sort(L1, ascDuration);
 		}
 
-		if (op2 == 3 || op2 == 2) {
+		if (op2 == 4 || op2 == 2) {
 			Arrays.sort(L2, ascCost);
-		} else if (op2 == 1 || op2 == 4) {
+		} else if (op2 == 1 || op2 == 3) {
 			Arrays.sort(L2, descCost);
 		}
 
@@ -108,9 +106,9 @@ public class IEselfjoin2predicates {
 		int i = 0;
 		for (MyTuple myTuple : L2)
 		{
-			p[i++] = Arrays.binarySearch(L1,myTuple); // MyTuple implements Comparable
-			System.out.println("test");
-			System.out.println(p[i-1]);
+			p[i++] = findId(L1,myTuple.id); // MyTuple implements Comparable
+			//System.out.println("test");
+			//System.out.println(p[i-1]);
 		}
 			
 
@@ -124,7 +122,7 @@ public class IEselfjoin2predicates {
 			eqOff = 1;
 
 		// Visit
-		for (i = 0; i < m; i++) {
+		for (i = 0; i < n; i++) {
 			int pos = p[i];
 			for (int k = pos + eqOff; k < n; k++) { // TODO: check initialization
 				if (bp[k] == 1) {
@@ -132,59 +130,47 @@ public class IEselfjoin2predicates {
 					join_result.add(new MyTuple[] { L1[k], L1[i] });
 				}
 			}
-			System.out.println("Saranya is a pandi");
-			System.out.println(bp.length);
+			//System.out.println(bp.length);
 			System.out.println(pos);
 			bp[pos]=1;
 		}
 		System.out.println(join_result.toString());
+		return join_result;
 
 	}
-
-	/**
-	 * Finds the val in a
-	 * 
-	 * @param a
-	 * @param val
-	 * @return
-	 */
-	/*private int findDurationOffset(MyTuple[] a, int val) {
+	private int findId(MyTuple[] a, int id) {
 		int i = 0;
 		for (MyTuple myTuple : a) {
-			if (val < myTuple.duration) {
+			if (myTuple.id == id)
 				return i;
-			}
 			i++;
 		}
-		return i;
-	}*/
+		return -1;
+	}
 
-	/**
-	 * Finds the val in a
-	 * 
-	 * @param a
-	 * @param val
-	 * @return
-	 */
-	/*
-	private int findCostOffset(MyTuple[] a, int val) {
-		int i = 0;
-		for (MyTuple myTuple : a) {
-			if (val < myTuple.cost) {
-				return i;
-			}
-			i++;
-		}
-		return i;
-	}*/
-/*		
-	public static void main(String[] argv) {
-		// Test the class here
-		MyTuple[] L1 = {new MyTuple(1,1,2),new MyTuple(2,2,1)};
-		MyTuple[] L2={new MyTuple(1,2,2),new MyTuple(2,2,2)};
-		IEselfjoin2predicates t = new IEselfjoin2predicates(L1,L2,2,2,1,2);
-		t.iejoin();
+	public static void main(String[] args) {
+		// Table T
+		MyTuple t1 = new MyTuple(404, 100, 6);
+		MyTuple t2 = new MyTuple(498, 140, 11);
+		MyTuple t3 = new MyTuple(676, 80, 10);
+		MyTuple t4 = new MyTuple(742, 90, 5); 
+
+		// Table T'
+		/*MyTuple tp1 = new MyTuple(404, 100, 6);
+		MyTuple tp2 = new MyTuple(498, 140, 11);
+		MyTuple tp3 = new MyTuple(676, 80, 10);
+		MyTuple tp4 = new MyTuple(742, 90, 7); */
+
+		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
+		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new MyTuple[] { t1, t2, t3,t4 }, new MyTuple[] { t1, t2, t3,t4 },4,1,4);
+		// TODO: Incorrect answer for the below case
 		
+		iejoin = new IEselfjoin2predicates(new MyTuple[] { t1, t2, t3,t4 }, new MyTuple[] { t1, t2, t3, t4 }, 4,4,1);
+
+		ArrayList<MyTuple[]> result = iejoin.run();
+		for (MyTuple[] myTuples : result) {
+			System.out.format("[%s, %s]\n", myTuples[0], myTuples[1]);
+		}
+
 	}
-	*/
 }
