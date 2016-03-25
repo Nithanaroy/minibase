@@ -1,8 +1,16 @@
 package iterator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import global.AttrType;
+import global.SystemDefs;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
+import heap.Tuple;
 
 /**
  *
@@ -15,10 +23,10 @@ import java.util.Comparator;
  */
 
 public class IEJoin2Tables2Predicates {
-	MyTuple[] L1;
-	MyTuple[] L2;
-	MyTuple[] L1p;
-	MyTuple[] L2p;
+	Tuple[] L1;
+	Tuple[] L2;
+	Tuple[] L1p;
+	Tuple[] L2p;
 	int m;
 	int n;
 	int op1;
@@ -26,7 +34,7 @@ public class IEJoin2Tables2Predicates {
 
 	private int[] p, pp, o1, o2, bp;
 
-	public IEJoin2Tables2Predicates(MyTuple[] l1, MyTuple[] l2, MyTuple[] l1p, MyTuple[] l2p, int m, int n, int op1, int op2) {
+	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l2, Tuple[] l1p, Tuple[] l2p, int m, int n, int op1, int op2) {
 		super();
 		L1 = l1;
 		L2 = l2;
@@ -44,13 +52,23 @@ public class IEJoin2Tables2Predicates {
 		bp = new int[l1p.length];
 	}
 
-	public ArrayList<MyTuple[]> run() {
-		ArrayList<MyTuple[]> join_result = new ArrayList<>();
-		Comparator<MyTuple> ascDuration = new Comparator<MyTuple>() {
+	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
+	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
+		// TODO: Decide what to do when exception is raised
+		ArrayList<Tuple[]> join_result = new ArrayList<>();
+		Comparator<Tuple> ascDuration = new Comparator<Tuple>() {
 			@Override
-			public int compare(MyTuple o1, MyTuple o2) {
+			public int compare(Tuple o1, Tuple o2) {
 				// sort on X
-				int diff = o1.duration - o2.duration;
+				int diff = 0;
+				try {
+					diff = o1.getIntFld(2) - o2.getIntFld(2);
+
+				} catch (FieldNumberOutOfBoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				if (diff > 1)
 					return 1;
 				else if (diff == 0)
@@ -59,11 +77,18 @@ public class IEJoin2Tables2Predicates {
 					return -1;
 			}
 		};
-		Comparator<MyTuple> descDuration = new Comparator<MyTuple>() {
+		Comparator<Tuple> descDuration = new Comparator<Tuple>() {
 			@Override
-			public int compare(MyTuple o1, MyTuple o2) {
+			public int compare(Tuple o1, Tuple o2) {
 				// sort on X
-				int diff = o1.duration - o2.duration;
+				int diff = 0;
+				try {
+					diff = o1.getIntFld(2) - o2.getIntFld(2);
+				} catch (FieldNumberOutOfBoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				if (diff > 1)
 					return -1;
 				else if (diff == 0)
@@ -72,11 +97,18 @@ public class IEJoin2Tables2Predicates {
 					return 1;
 			}
 		};
-		Comparator<MyTuple> ascCost = new Comparator<MyTuple>() {
+		Comparator<Tuple> ascCost = new Comparator<Tuple>() {
 			@Override
-			public int compare(MyTuple o1, MyTuple o2) {
+			public int compare(Tuple o1, Tuple o2) {
 				// sort on X
-				int diff = o1.cost - o2.cost;
+				int diff = 0;
+				try {
+					diff = o1.getIntFld(3) - o2.getIntFld(3);
+				} catch (FieldNumberOutOfBoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				if (diff > 1)
 					return 1;
 				else if (diff == 0)
@@ -85,11 +117,18 @@ public class IEJoin2Tables2Predicates {
 					return -1;
 			}
 		};
-		Comparator<MyTuple> descCost = new Comparator<MyTuple>() {
+		Comparator<Tuple> descCost = new Comparator<Tuple>() {
 			@Override
-			public int compare(MyTuple o1, MyTuple o2) {
+			public int compare(Tuple o1, Tuple o2) {
 				// sort on X
-				int diff = o1.cost - o2.cost;
+				int diff = 0;
+				try {
+					diff = o1.getIntFld(3) - o2.getIntFld(3);
+				} catch (FieldNumberOutOfBoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				if (diff > 1)
 					return -1;
 				else if (diff == 0)
@@ -118,19 +157,19 @@ public class IEJoin2Tables2Predicates {
 
 		// Compute permutation arrays - P, P'
 		int i = 0;
-		for (MyTuple myTuple : L2)
-			p[i++] = findId(L1, myTuple.id); // MyTuple implements Comparable
+		for (Tuple myTuple : L2)
+			p[i++] = findId(L1, myTuple.getIntFld(1)); // Tuple implements Comparable
 		i = 0;
-		for (MyTuple myTuple : L2p)
-			pp[i++] = findId(L1p, myTuple.id); // MyTuple implements Comparable
+		for (Tuple myTuple : L2p)
+			pp[i++] = findId(L1p, myTuple.getIntFld(1)); // Tuple implements Comparable
 
 		// Compute offset arrays - O1, O2
 		i = 0;
-		for (MyTuple myTuple : L1)
-			o1[i++] = findDurationOffset(L1p, myTuple.duration); // find myTuple.duration in L1p
+		for (Tuple myTuple : L1)
+			o1[i++] = findDurationOffset(L1p, myTuple.getIntFld(2)); // find myTuple.duration in L1p
 		i = 0;
-		for (MyTuple myTuple : L2)
-			o2[i++] = findCostOffset(L2p, myTuple.cost); // find myTuple.cost in L2p
+		for (Tuple myTuple : L2)
+			o2[i++] = findCostOffset(L2p, myTuple.getIntFld(3)); // find myTuple.cost in L2p
 
 		// intialize the bit array, set all to zero
 
@@ -150,7 +189,7 @@ public class IEJoin2Tables2Predicates {
 			for (int k = off1 + eqOff; k < n; k++) { // TODO: check initialization
 				if (bp[k] == 1) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
-					join_result.add(new MyTuple[] { L2[i], L2p[k] });
+					join_result.add(new Tuple[] { L2[i], L2p[k] });
 				}
 			}
 		}
@@ -159,10 +198,10 @@ public class IEJoin2Tables2Predicates {
 
 	}
 
-	private int findId(MyTuple[] a, int id) {
+	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
 		int i = 0;
-		for (MyTuple myTuple : a) {
-			if (myTuple.id == id)
+		for (Tuple myTuple : a) {
+			if (myTuple.getIntFld(1) == id)
 				return i;
 			i++;
 		}
@@ -176,14 +215,16 @@ public class IEJoin2Tables2Predicates {
 	 * @param a Array in which val has to be found
 	 * @param val value to be searched
 	 * @return index of val in a (if it would have been present)
+	 * @throws IOException
+	 * @throws FieldNumberOutOfBoundException
 	 */
-	private int findDurationOffset(MyTuple[] a, int val) {
+	private int findDurationOffset(Tuple[] a, int val) throws FieldNumberOutOfBoundException, IOException {
 		// Assumption: 'a' has at least one element
-		if (a[0].duration <= a[a.length - 1].duration) {
+		if (a[0].getIntFld(2) <= a[a.length - 1].getIntFld(2)) {
 			// a is sorted in ascending order
 			int i = 0;
-			for (MyTuple myTuple : a) {
-				if (val <= myTuple.duration) {
+			for (Tuple myTuple : a) {
+				if (val <= myTuple.getIntFld(2)) {
 					return i;
 				}
 				i++;
@@ -191,8 +232,8 @@ public class IEJoin2Tables2Predicates {
 			return i;
 		} else {
 			int i = 0;
-			for (MyTuple myTuple : a) {
-				if (val >= myTuple.duration) {
+			for (Tuple myTuple : a) {
+				if (val >= myTuple.getIntFld(2)) {
 					return i;
 				}
 				i++;
@@ -208,14 +249,16 @@ public class IEJoin2Tables2Predicates {
 	 * @param a Array in which val has to be found
 	 * @param val value to be searched
 	 * @return index of val in a (if it would have been present)
+	 * @throws IOException
+	 * @throws FieldNumberOutOfBoundException
 	 */
-	private int findCostOffset(MyTuple[] a, int val) {
+	private int findCostOffset(Tuple[] a, int val) throws FieldNumberOutOfBoundException, IOException {
 		// Assumption: 'a' has at least one element
-		if (a[0].cost <= a[a.length - 1].cost) {
+		if (a[0].getIntFld(3) <= a[a.length - 1].getIntFld(3)) {
 			// a is sorted in ascending order
 			int i = 0;
-			for (MyTuple myTuple : a) {
-				if (val <= myTuple.cost) {
+			for (Tuple myTuple : a) {
+				if (val <= myTuple.getIntFld(3)) {
 					return i;
 				}
 				i++;
@@ -223,8 +266,8 @@ public class IEJoin2Tables2Predicates {
 			return i;
 		} else {
 			int i = 0;
-			for (MyTuple myTuple : a) {
-				if (val >= myTuple.cost) {
+			for (Tuple myTuple : a) {
+				if (val >= myTuple.getIntFld(3)) {
 					return i;
 				}
 				i++;
@@ -233,28 +276,61 @@ public class IEJoin2Tables2Predicates {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static Tuple create(int id, int duration, int cost, AttrType[] Stypes)
+			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
+		Tuple t = new Tuple();
+		t.setHdr((short) 4, Stypes, null);
+		t.setIntFld(1, id);
+		t.setIntFld(2, duration);
+		t.setIntFld(3, cost);
+		return t;
+	}
+
+	public static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
+		return String.format("[%d, %d, %d]", t.getIntFld(1), t.getIntFld(2), t.getIntFld(3));
+	}
+
+	public static void main(String[] args)
+			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
+		final int NUMBUF = 50;
+		// String dbpath = "/tmp/" + System.getProperty("user.name") + ".minibase.jointestdb";
+		// SystemDefs sysdef = new SystemDefs(dbpath, 1000, NUMBUF, "Clock");
+
+		// Setting the types
+		AttrType[] Stypes = new AttrType[4];
+		Stypes[0] = new AttrType(AttrType.attrInteger);
+		Stypes[1] = new AttrType(AttrType.attrInteger);
+		Stypes[2] = new AttrType(AttrType.attrInteger);
+		Stypes[3] = new AttrType(AttrType.attrInteger);
+
 		// Table T
-		MyTuple t1 = new MyTuple(100, 140, 9);
-		MyTuple t2 = new MyTuple(101, 100, 12);
-		MyTuple t3 = new MyTuple(102, 90, 5);
+		Tuple t1 = create(100, 140, 9, Stypes);
+		Tuple t2 = create(101, 100, 12, Stypes);
+		Tuple t3 = create(102, 90, 5, Stypes);
 
 		// Table T'
-		MyTuple tp1 = new MyTuple(404, 100, 6);
-		MyTuple tp2 = new MyTuple(498, 140, 11);
-		MyTuple tp3 = new MyTuple(676, 80, 10);
-		MyTuple tp4 = new MyTuple(742, 90, 7);
+		Tuple tp1 = create(404, 100, 6, Stypes);
+		Tuple tp2 = create(498, 140, 11, Stypes);
+		Tuple tp3 = create(676, 80, 10, Stypes);
+		Tuple tp4 = create(742, 90, 7, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEJoin2Tables2Predicates iejoin = new IEJoin2Tables2Predicates(new MyTuple[] { t1, t2, t3 }, new MyTuple[] { t1, t2, t3 },
-				new MyTuple[] { tp1, tp2, tp3, tp4 }, new MyTuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 1, 4);
+		IEJoin2Tables2Predicates iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
+				new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 1, 4);
 		// TODO: Incorrect answer for the below case
-		iejoin = new IEJoin2Tables2Predicates(new MyTuple[] { t1, t2, t3 }, new MyTuple[] { t1, t2, t3 },
-				new MyTuple[] { tp1, tp2, tp3, tp4 }, new MyTuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
+		// iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
+		// new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
 
-		ArrayList<MyTuple[]> result = iejoin.run();
-		for (MyTuple[] myTuples : result) {
-			System.out.format("[%s, %s]\n", myTuples[0], myTuples[1]);
+		ArrayList<Tuple[]> result = null;
+		try {
+			result = iejoin.run();
+		} catch (FieldNumberOutOfBoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		for (Tuple[] myTuples : result) {
+			System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
 		}
 
 	}
