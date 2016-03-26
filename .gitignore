@@ -65,3 +65,4 @@ local.properties
 .DS_Store
 src/typescript
 src/tests/TRACE
+data/

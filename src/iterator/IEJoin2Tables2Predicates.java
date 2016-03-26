@@ -3,14 +3,15 @@ package iterator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 
 import global.AttrType;
-import global.SystemDefs;
 import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Tuple;
+import index.BloomFilter;
 
 /**
  *
@@ -32,7 +33,8 @@ public class IEJoin2Tables2Predicates {
 	int op1;
 	int op2;
 
-	private int[] p, pp, o1, o2, bp;
+	private int[] p, pp, o1, o2;
+	private BitSet bp;
 
 	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l2, Tuple[] l1p, Tuple[] l2p, int m, int n, int op1, int op2) {
 		super();
@@ -49,7 +51,7 @@ public class IEJoin2Tables2Predicates {
 		pp = new int[l1p.length];
 		o1 = new int[l1.length];
 		o2 = new int[l2.length];
-		bp = new int[l1p.length];
+		bp = new BitSet(l1p.length);
 	}
 
 	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
@@ -180,22 +182,70 @@ public class IEJoin2Tables2Predicates {
 			eqOff = 1;
 
 		// Visit
-		for (i = 0; i < m; i++) {
+		// usingBitsetNaive(join_result, eqOff);
+		// usingBitsetOptimized(join_result, eqOff);
+		usingBloomFilter(join_result, eqOff, 2);
+
+		return join_result;
+
+	}
+
+	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
+		for (int i = 0; i < m; i++) {
 			int off2 = o2[i];
 			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
-				bp[pp[j]] = 1;
+				bp.set(pp[j]); // = 1;
 			}
 			int off1 = o1[p[i]];
 			for (int k = off1 + eqOff; k < n; k++) { // TODO: check initialization
-				if (bp[k] == 1) {
+				if (bp.get(k)) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
 					join_result.add(new Tuple[] { L2[i], L2p[k] });
 				}
 			}
 		}
+	}
 
-		return join_result;
+	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
+		BloomFilter b = new BloomFilter(L1p.length, reduction_factor);
+		for (int i = 0; i < m; i++) {
+			int off2 = o2[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
+				bp.set(pp[j]); // = 1;
+				b.setBit(pp[j]);
+			}
+			int off1 = o1[p[i]];
+			int k = off1 + eqOff;
+			int c = b.nextSetChunk(k); // TODO: check initialization
+			while (c >= 0) {
+				// traverse the chunk
+				k = Math.max(k, c);
+				int limit = Math.min(c + reduction_factor + 1, L1p.length);
+				while (k < limit) {
+					if (bp.get(k)) {
+						join_result.add(new Tuple[] { L2[i], L2p[k] });
+					}
+					k++;
+				}
+				c = b.nextSetChunk(k);
+			}
+		}
+	}
 
+	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
+		for (int i = 0; i < m; i++) {
+			int off2 = o2[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
+				bp.set(pp[j]); // = 1;
+			}
+			int off1 = o1[p[i]];
+			int k = bp.nextSetBit(off1 + eqOff); // TODO: check initialization
+			while (k >= 0) {
+				// add tuples w.r.t. (L2[i],L2p[k]) to join result
+				join_result.add(new Tuple[] { L2[i], L2p[k] });
+				k = bp.nextSetBit(k + 1);
+			}
+		}
 	}
 
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
@@ -292,10 +342,6 @@ public class IEJoin2Tables2Predicates {
 
 	public static void main(String[] args)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		final int NUMBUF = 50;
-		// String dbpath = "/tmp/" + System.getProperty("user.name") + ".minibase.jointestdb";
-		// SystemDefs sysdef = new SystemDefs(dbpath, 1000, NUMBUF, "Clock");
-
 		// Setting the types
 		AttrType[] Stypes = new AttrType[4];
 		Stypes[0] = new AttrType(AttrType.attrInteger);
@@ -315,13 +361,13 @@ public class IEJoin2Tables2Predicates {
 		Tuple tp4 = create(742, 90, 7, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		// Below Query: Less time, More cost
+		System.out.println("Query: Less time, More cost");
 		IEJoin2Tables2Predicates iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
 				new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 1, 4);
 		// TODO: Incorrect answer for the below case
-		// Below Query: More time, Less cost
-		iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 },
-				new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
+		// System.out.println("Query: More time, Less cost");
+		// iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 },
+		// new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
 
 		ArrayList<Tuple[]> result = null;
 		try {
