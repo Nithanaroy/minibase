@@ -139,10 +139,10 @@ public class IEJoin2Tables2Predicates {
 		};
 
 		// Compute L1, L1', L2, L2'
-		if (op1 == 4 || op1 == 2) {
+		if (op1 == 3 || op1 == 4) {
 			Arrays.sort(L1, descDuration);
 			Arrays.sort(L1p, descDuration);
-		} else if (op1 == 1 || op1 == 3) {
+		} else if (op1 == 1 || op1 == 2) {
 			Arrays.sort(L1, ascDuration);
 			Arrays.sort(L1p, ascDuration);
 		}
@@ -174,15 +174,15 @@ public class IEJoin2Tables2Predicates {
 		// intialize the bit array, set all to zero
 
 		int eqOff = 0;
-		if ((op1 == 2 || op1 == 4) && (op2 == 2 || op2 == 4))
+		if ((op1 == 2 || op1 == 3) && (op2 == 2 || op2 == 3))
 			eqOff = 0;
 		else
 			eqOff = 1;
 
 		// Visit
 		for (i = 0; i < m; i++) {
-			// int off2 = o2[i];
-			for (int j = o2[Math.max(0, i - 1)]; j <= Math.min(o2[i], n - 1); j++) {
+			int off2 = o2[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
 				bp[pp[j]] = 1;
 			}
 			int off1 = o1[p[i]];
@@ -315,11 +315,13 @@ public class IEJoin2Tables2Predicates {
 		Tuple tp4 = create(742, 90, 7, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
+		// Below Query: Less time, More cost
 		IEJoin2Tables2Predicates iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
 				new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 1, 4);
 		// TODO: Incorrect answer for the below case
-		// iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
-		// new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
+		// Below Query: More time, Less cost
+		iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 },
+				new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
 
 		ArrayList<Tuple[]> result = null;
 		try {
