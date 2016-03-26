@@ -52,7 +52,7 @@ public class IEJoin2Tables2Predicates {
 		bp = new int[l1p.length];
 	}
 
-	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
+	// [0] => id, [1] => duration, [2] => cost, [3] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
 		// TODO: Decide what to do when exception is raised
 		ArrayList<Tuple[]> join_result = new ArrayList<>();
@@ -62,7 +62,7 @@ public class IEJoin2Tables2Predicates {
 				// sort on X
 				int diff = 0;
 				try {
-					diff = o1.getIntFld(2) - o2.getIntFld(2);
+					diff = o1.getIntFld(1) - o2.getIntFld(1);
 
 				} catch (FieldNumberOutOfBoundException e) {
 					e.printStackTrace();
@@ -83,7 +83,7 @@ public class IEJoin2Tables2Predicates {
 				// sort on X
 				int diff = 0;
 				try {
-					diff = o1.getIntFld(2) - o2.getIntFld(2);
+					diff = o1.getIntFld(1) - o2.getIntFld(1);
 				} catch (FieldNumberOutOfBoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -103,7 +103,7 @@ public class IEJoin2Tables2Predicates {
 				// sort on X
 				int diff = 0;
 				try {
-					diff = o1.getIntFld(3) - o2.getIntFld(3);
+					diff = o1.getIntFld(2) - o2.getIntFld(2);
 				} catch (FieldNumberOutOfBoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -123,7 +123,7 @@ public class IEJoin2Tables2Predicates {
 				// sort on X
 				int diff = 0;
 				try {
-					diff = o1.getIntFld(3) - o2.getIntFld(3);
+					diff = o1.getIntFld(2) - o2.getIntFld(2);
 				} catch (FieldNumberOutOfBoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -158,18 +158,18 @@ public class IEJoin2Tables2Predicates {
 		// Compute permutation arrays - P, P'
 		int i = 0;
 		for (Tuple myTuple : L2)
-			p[i++] = findId(L1, myTuple.getIntFld(1)); // Tuple implements Comparable
+			p[i++] = findId(L1, myTuple.getIntFld(0)); // Tuple implements Comparable
 		i = 0;
 		for (Tuple myTuple : L2p)
-			pp[i++] = findId(L1p, myTuple.getIntFld(1)); // Tuple implements Comparable
+			pp[i++] = findId(L1p, myTuple.getIntFld(0)); // Tuple implements Comparable
 
 		// Compute offset arrays - O1, O2
 		i = 0;
 		for (Tuple myTuple : L1)
-			o1[i++] = findDurationOffset(L1p, myTuple.getIntFld(2)); // find myTuple.duration in L1p
+			o1[i++] = findDurationOffset(L1p, myTuple.getIntFld(1)); // find myTuple.duration in L1p
 		i = 0;
 		for (Tuple myTuple : L2)
-			o2[i++] = findCostOffset(L2p, myTuple.getIntFld(3)); // find myTuple.cost in L2p
+			o2[i++] = findCostOffset(L2p, myTuple.getIntFld(2)); // find myTuple.cost in L2p
 
 		// intialize the bit array, set all to zero
 
@@ -201,7 +201,7 @@ public class IEJoin2Tables2Predicates {
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
 		int i = 0;
 		for (Tuple myTuple : a) {
-			if (myTuple.getIntFld(1) == id)
+			if (myTuple.getIntFld(0) == id)
 				return i;
 			i++;
 		}
@@ -219,6 +219,40 @@ public class IEJoin2Tables2Predicates {
 	 * @throws FieldNumberOutOfBoundException
 	 */
 	private int findDurationOffset(Tuple[] a, int val) throws FieldNumberOutOfBoundException, IOException {
+		// Assumption: 'a' has at least one element
+		if (a[0].getIntFld(1) <= a[a.length - 1].getIntFld(1)) {
+			// a is sorted in ascending order
+			int i = 0;
+			for (Tuple myTuple : a) {
+				if (val <= myTuple.getIntFld(1)) {
+					return i;
+				}
+				i++;
+			}
+			return i;
+		} else {
+			int i = 0;
+			for (Tuple myTuple : a) {
+				if (val >= myTuple.getIntFld(1)) {
+					return i;
+				}
+				i++;
+			}
+			return i;
+		}
+	}
+
+	/**
+	 * Finds the position of val in a if found, else position where it would have been found
+	 * Checks cost attribute of the tuple
+	 * 
+	 * @param a Array in which val has to be found
+	 * @param val value to be searched
+	 * @return index of val in a (if it would have been present)
+	 * @throws IOException
+	 * @throws FieldNumberOutOfBoundException
+	 */
+	private int findCostOffset(Tuple[] a, int val) throws FieldNumberOutOfBoundException, IOException {
 		// Assumption: 'a' has at least one element
 		if (a[0].getIntFld(2) <= a[a.length - 1].getIntFld(2)) {
 			// a is sorted in ascending order
@@ -242,66 +276,27 @@ public class IEJoin2Tables2Predicates {
 		}
 	}
 
-	/**
-	 * Finds the position of val in a if found, else position where it would have been found
-	 * Checks cost attribute of the tuple
-	 * 
-	 * @param a Array in which val has to be found
-	 * @param val value to be searched
-	 * @return index of val in a (if it would have been present)
-	 * @throws IOException
-	 * @throws FieldNumberOutOfBoundException
-	 */
-	private int findCostOffset(Tuple[] a, int val) throws FieldNumberOutOfBoundException, IOException {
-		// Assumption: 'a' has at least one element
-		if (a[0].getIntFld(3) <= a[a.length - 1].getIntFld(3)) {
-			// a is sorted in ascending order
-			int i = 0;
-			for (Tuple myTuple : a) {
-				if (val <= myTuple.getIntFld(3)) {
-					return i;
-				}
-				i++;
-			}
-			return i;
-		} else {
-			int i = 0;
-			for (Tuple myTuple : a) {
-				if (val >= myTuple.getIntFld(3)) {
-					return i;
-				}
-				i++;
-			}
-			return i;
-		}
-	}
-
 	public static Tuple create(int id, int duration, int cost, AttrType[] Stypes)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		Tuple t = new Tuple();
-		t.setHdr((short) 4, Stypes, null);
-		t.setIntFld(1, id);
-		t.setIntFld(2, duration);
-		t.setIntFld(3, cost);
+		t.setHdr((short) 3, Stypes, null);
+		t.setIntFld(0, id);
+		t.setIntFld(1, duration);
+		t.setIntFld(2, cost);
 		return t;
 	}
 
 	public static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
-		return String.format("[%d, %d, %d]", t.getIntFld(1), t.getIntFld(2), t.getIntFld(3));
+		return String.format("[%d, %d, %d]", t.getIntFld(0), t.getIntFld(1), t.getIntFld(2));
 	}
 
 	public static void main(String[] args)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		final int NUMBUF = 50;
-		// String dbpath = "/tmp/" + System.getProperty("user.name") + ".minibase.jointestdb";
-		// SystemDefs sysdef = new SystemDefs(dbpath, 1000, NUMBUF, "Clock");
-
 		// Setting the types
 		AttrType[] Stypes = new AttrType[4];
 		Stypes[0] = new AttrType(AttrType.attrInteger);
 		Stypes[1] = new AttrType(AttrType.attrInteger);
 		Stypes[2] = new AttrType(AttrType.attrInteger);
-		Stypes[3] = new AttrType(AttrType.attrInteger);
 
 		// Table T
 		Tuple t1 = create(100, 140, 9, Stypes);
