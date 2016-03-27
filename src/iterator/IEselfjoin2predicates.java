@@ -9,10 +9,12 @@ import heap.Heapfile;
 import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Tuple;
+import index.BloomFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Vector;
 
@@ -23,8 +25,8 @@ public class IEselfjoin2predicates {
 	int op1;
 	int op2;
 
-	private int[] p,bp;
-
+	private int[] p;
+	private BitSet bp;
 	public IEselfjoin2predicates(Tuple[] l1, Tuple[] l2, int n,int op1, int op2) {
 		super();
 		L1 = l1;
@@ -35,7 +37,7 @@ public class IEselfjoin2predicates {
 
 		p = new int[l1.length];
 		System.out.println("Lengath of p is "+p.length);
-		bp = new int[l1.length];
+		bp = new BitSet(l1.length);
 	}
 	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
@@ -155,23 +157,80 @@ public class IEselfjoin2predicates {
 			eqOff = 1;
 
 		// Visit
-		for (int j = 0; j < n; j++) {
-			int pos = p[j];
-			bp[pos]=1;
-			System.out.println(pos);
-			for (int k = pos + eqOff; k < n; k++) { // TODO: check initialization
-				if (bp[k] == 1) {
+		//usingBitsetNaive(join_result, eqOff);
+		// usingBitsetOptimized(join_result, eqOff);
+		usingBloomFilter(join_result, eqOff, 2);
+		return join_result;
+	}
+	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
+		for (int i = 0; i < n; i++) {
+			int off2 = p[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
+				bp.set(off2); // = 1;
+			}
+			for (int k = off2 + eqOff; k < n; k++) { // TODO: check initialization
+				if (bp.get(k)) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
-					join_result.add(new Tuple[] { L1[k], L1[p[j]] });
+					join_result.add(new Tuple[] { L1[k], L1[p[i]] });
 				}
 			}
-			//System.out.println(bp.length);
-			
 		}
-		//System.out.println(join_result.toString());
-		return join_result;
-
 	}
+	// set the bloom filter pos
+	// c = bp.getNext(pos + eqOff)
+//	while(c >= 0) { 
+//	k = Math.max(k, c);
+//	int limit = Math.min(c + reduction_factor + 1, L1p.length);
+//	while (k < limit) {
+//		if (bp.get(k)) {
+//			join_result.add(new Tuple[] { L2[i], L2p[k] });
+//		}
+//		k++;
+//	}
+//	c = b.nextSetChunk(k);
+//}
+//System.out.println(join_result.toString());
+
+	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
+		BloomFilter b = new BloomFilter(L1.length, reduction_factor);
+		for (int i = 0; i < n; i++) {
+			int off2 = p[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
+				bp.set(off2); // = 1;
+				b.setBit(off2);
+			}
+			int k = off2 + eqOff;
+			int c = b.nextSetChunk(k); // TODO: check initialization
+			while (c >= 0) {
+				// traverse the chunk
+				k = Math.max(k, c);
+				int limit = Math.min(c + reduction_factor + 1, L1.length);
+				while (k < limit) {
+					if (bp.get(k)) {
+						join_result.add(new Tuple[] { L1[k], L1[p[i]] });
+					}
+					k++;
+				}
+				c = b.nextSetChunk(k);
+			}
+		}
+	}
+
+	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
+		for (int i = 0; i < n; i++) {
+			int off2 = p[i];
+			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
+				bp.set(off2); // = 1;
+			}
+			int k = bp.nextSetBit(off2 + eqOff); // TODO: check initialization
+			while (k >= 0) {
+				// add tuples w.r.t. (L1[i],L1[k]) to join result
+				join_result.add(new Tuple[] { L1[k], L1[p[i]] });
+				k = bp.nextSetBit(k + 1);
+			}
+		}
+	}
+
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
 		int i = 0;
 		for (Tuple myTuple : a) {
@@ -213,10 +272,10 @@ public class IEselfjoin2predicates {
 		Tuple t1 = create(404, 100, 6, Stypes);
 		Tuple t2 = create(498, 140, 11, Stypes);
 		Tuple t3 = create(676, 80, 10, Stypes);
-		Tuple t4 = create(742, 90, 5, Stypes);
+		Tuple t4 = create(742, 90, 9, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,4,1);
+		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,1,4);
 		// TODO: Incorrect answer for the below case
 		// iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
 		// new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
