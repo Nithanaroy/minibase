@@ -36,6 +36,10 @@ public class IEJoin2Tables2Predicates {
 	private int[] p, pp, o1, o2;
 	private BitSet bp;
 
+	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l1p, int op1, int op2) {
+		this(l1, l1.clone(), l1p, l1p.clone(), l1.length, l1p.length, op1, op2);
+	}
+
 	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l2, Tuple[] l1p, Tuple[] l2p, int m, int n, int op1, int op2) {
 		super();
 		L1 = l1;
@@ -369,9 +373,14 @@ public class IEJoin2Tables2Predicates {
 		// iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 },
 		// new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
 
+		iejoin.printResults();
+
+	}
+
+	public void printResults() throws FieldNumberOutOfBoundException, IOException {
 		ArrayList<Tuple[]> result = null;
 		try {
-			result = iejoin.run();
+			result = this.run();
 		} catch (FieldNumberOutOfBoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -380,7 +389,6 @@ public class IEJoin2Tables2Predicates {
 		for (Tuple[] myTuples : result) {
 			System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
 		}
-
 	}
 
 }
