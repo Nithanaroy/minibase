@@ -392,6 +392,17 @@ public class ReadInput {
 				System.out.println("Running query2a");
 				// query_2a();
 				// variable queryList is [Q_1 Q_1,Q, Q_3 1 Q_3]
+				// variable queryList is [R_1 R_1, R, R_3 2 S_3]
+				System.out.println(queryList.get(0));
+				int proj = Integer.parseInt(queryList.get(0).split(" ")[0].trim().split("_")[1].trim())+3; // get 1 from R_1 R_1
+				
+				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
+				int t2cond1Col = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_3 2 S_4
+				int op1 = Integer.parseInt(queryList.get(2).split(" ")[1].trim()); // get 2 from R_3 2 S_4
+
+				// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
+				Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", --t1cond1Col, --t2cond1Col);
+				//new IESelfJoin1Predicate(T,op1,proj).printResults();
 			}
 		} else if (queryList.size() == 5) {
 			if (filesToRead.length == 2) {
@@ -442,6 +453,7 @@ public class ReadInput {
 				System.out.println("Running query2b");
 				// query_2b();
 				// variable queryList is [R_1 S_1, R S, R_3 2 S_4, AND, R_5 1 S_6]
+				//variable queryList is [Q_1 Q_1, Q, Q_3 4 Q_3, AND, Q_4 1 Q_4]
 				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
 				int t2cond1Col = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_3 2 S_4
 				int t1cond2Col = Integer.parseInt(queryList.get(4).split(" ")[0].trim().split("_")[1].trim()); // get 5 from R_5 1 S_6
