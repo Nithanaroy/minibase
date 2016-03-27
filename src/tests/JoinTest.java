@@ -2059,7 +2059,39 @@ private void Query8_CondExpr(CondExpr[] expr) {
   }
 }
 
-
+public void deleteFirstLine() throws IOException {
+	  String absPath = new File("").getAbsolutePath();
+      String sourcePath = "javaminibase/src/tests/test";
+      String destinationPath = "javaminibase/src/tests/newtest";
+      File f = new File(absPath+destinationPath);
+      f.getParentFile().mkdirs(); 
+      f.createNewFile();
+      
+      FileWriter fstream = new FileWriter(absPath+destinationPath, true);
+	  BufferedWriter out = new BufferedWriter(fstream);
+      
+      BufferedReader reader = null;
+      reader = new BufferedReader(new FileReader(absPath + sourcePath));                        
+      String line = null;         
+      while ((line = reader.readLine()) != null)
+      {
+    	System.out.println (line);  
+    	out.write(line);
+		out.newLine();
+      }               
+      reader.close();
+      out.close();
+      
+      File oldfile = new File(absPath+sourcePath);
+      oldfile.delete();
+      boolean success = f.renameTo(oldfile);
+      
+      //Path pathn = FileSystems.getDefault().getPath(path+"/javaminibase/src/tests", "test");
+      //Files.delete(pathn);
+      //File newName = new File(path+relativePath);
+      //boolean success = f.renameTo(newName);
+		
+  }
 
 
 
