@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 import global.AttrOperator;
 import global.AttrType;
@@ -18,28 +19,50 @@ import heap.Tuple;
 import iterator.CondExpr;
 import iterator.FileScan;
 import iterator.FldSpec;
-import iterator.IEJoin2Tables2Predicates;
+//import iterator.IEJoin2Tables2Predicates;
 import iterator.NestedLoopsJoins;
 import iterator.RelSpec;
 import iterator.Sort;
-
-class data {
-	public String stringData;
-	public Integer intData;
-	boolean isString = false;
-	boolean isInteger = false;
-}
 
 public class ReadInput {
 	public enum Predicate {
 		singlePredicate, doublePredicate, unknown;
 	}
+	public Vector loadList(String filename,ArrayList<Integer> schema)
+	{
+		 Vector	reserves = new Vector();
+	    
+	    try {
+	    FileReader fileReader = new FileReader(filename);
+	    BufferedReader bufferedReader1 = new BufferedReader(fileReader);
 
+		// Reading Reserves data into reserves vector
+	    String line = null;
+	    while((line = bufferedReader1.readLine()) != null) {
+	    	String[] temp = line.split(",");
+		int[] arr = new int[schema.size()];
+		Vector	tmpvector = new Vector();
+		for (int i = 0;i<schema.size();i++){
+			arr[i] = Integer.parseInt(temp[i]);
+			tmpvector.add(arr[i]);
+		}
+		reserves.addElement(tmpvector);
+	    }
+	    //System.out.println("data" + ((Reserves)reserves.get(0)).r_1);
+	    bufferedReader1.close();         
+	}
+	    catch(FileNotFoundException ex) {
+	    	System.out.println("Unable to open file  "+filename+".txt");                
+	    }
+	    catch(IOException ex) {
+	    	System.out.println("Error reading file "+filename+".txt");                  
+	    }
+	    return reserves;
+	}
 	public ArrayList<Integer> readFile(String filepath) {
 		String line = null;
 
 		ArrayList<Integer> schema = new ArrayList<Integer>();
-		ArrayList<ArrayList<data>> listOfLists = new ArrayList<ArrayList<data>>();
 		try {
 			FileReader fileReader = new FileReader(filepath);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -49,6 +72,8 @@ public class ReadInput {
 				if (schemaFlag) {
 					schemaFlag = false;
 					for (int i = 0; i < dataFields.length; ++i) {
+						schema.add(AttrType.attrInteger);
+						/*
 						if (dataFields[i].equals("attrInteger")) {
 							schema.add(AttrType.attrInteger);
 						} else if (dataFields[i].equals("attrString")) {
@@ -56,6 +81,7 @@ public class ReadInput {
 						} else if (dataFields[i].equals("attrNull")) {
 							schema.add(AttrType.attrNull);
 						}
+						*/
 					}
 					System.out.println(schema.toString());
 					break;
@@ -116,7 +142,7 @@ public class ReadInput {
 			FileReader fileReader = new FileReader(fileName);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			int counter = 0;
-			int columnsCount = bufferedReader.readLine().trim().split(",").length + 4; // First four columns are for office use ;)
+			int columnsCount = bufferedReader.readLine().trim().split(",").length + 3; // First four columns are for office use ;)
 			Stypes = new AttrType[columnsCount];
 			for (int i = 0; i < columnsCount; i++) {
 				Stypes[i] = new AttrType(AttrType.attrInteger); // Assumption: All columns are of integer type
@@ -125,7 +151,8 @@ public class ReadInput {
 				String[] tupleData = line.split(",");
 				Tuple t = new Tuple();
 				t.setHdr((short) columnsCount, Stypes, null);
-				t.setIntFld(1, counter++); // id column
+				//t.setIntFld(1, counter++); // id column
+				setTuple(t, Stypes[pos1], String.valueOf(counter++), 1);
 				setTuple(t, Stypes[pos1], tupleData[pos1], 2); // condition one column
 				setTuple(t, Stypes[pos2], tupleData[pos2], 3); // condition two column
 				for (int i = 0; i < tupleData.length; i++) {
@@ -364,6 +391,7 @@ public class ReadInput {
 			} else if (filesToRead.length == 1) {
 				System.out.println("Running query2a");
 				// query_2a();
+				// variable queryList is [Q_1 Q_1,Q, Q_3 1 Q_3]
 			}
 		} else if (queryList.size() == 5) {
 			if (filesToRead.length == 2) {
@@ -381,7 +409,8 @@ public class ReadInput {
 					// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
 					Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", --t1cond1Col, --t1cond2Col);
 					Tuple[] T1 = generateData(sourceDirPath + filesToRead[1] + ".txt", --t2cond1Col, --t2cond2Col);
-					new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
+					// commented for testing
+					//new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
 				} else if (question1b == 1) {
 					System.out.println("Running query1b");
 					// query_1b();
@@ -412,6 +441,19 @@ public class ReadInput {
 			} else if (filesToRead.length == 1) {
 				System.out.println("Running query2b");
 				// query_2b();
+				// variable queryList is [R_1 S_1, R S, R_3 2 S_4, AND, R_5 1 S_6]
+				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
+				int t2cond1Col = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_3 2 S_4
+				int t1cond2Col = Integer.parseInt(queryList.get(4).split(" ")[0].trim().split("_")[1].trim()); // get 5 from R_5 1 S_6
+				int t2cond2Col = Integer.parseInt(queryList.get(4).split(" ")[2].trim().split("_")[1].trim()); // get 6 from R_5 1 S_6
+				int op1 = Integer.parseInt(queryList.get(2).split(" ")[1].trim()); // get 2 from R_3 2 S_4
+				int op2 = Integer.parseInt(queryList.get(4).split(" ")[1].trim()); // get 1 from R_5 1 S_6
+
+				// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
+				Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", --t1cond1Col, --t1cond2Col);
+				Tuple[] T1 = generateData(sourceDirPath + filesToRead[0] + ".txt", --t2cond1Col, --t2cond2Col);
+				// commented for testing
+				//new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
 			}
 		} else {
 			// unknown predicate query
