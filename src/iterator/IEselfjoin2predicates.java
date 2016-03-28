@@ -27,11 +27,11 @@ public class IEselfjoin2predicates {
 
 	private int[] p;
 	private BitSet bp;
-	public IEselfjoin2predicates(Tuple[] l1, Tuple[] l2, int n,int op1, int op2) {
+	public IEselfjoin2predicates(Tuple[] l1, Tuple[] l2,int op1, int op2) {
 		super();
 		L1 = l1;
 		L2 = l2;
-		this.n = n;
+		this.n = l1.length;
 		this.op1 = op1;
 		this.op2 = op2;
 
@@ -42,6 +42,7 @@ public class IEselfjoin2predicates {
 	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
 		// TODO: Decide what to do when exception is raised
+		long startTime1 = System.nanoTime();
 		ArrayList<Tuple[]> join_result = new ArrayList<>();
 		Comparator<Tuple> ascDuration = new Comparator<Tuple>() {
 			@Override
@@ -126,18 +127,20 @@ public class IEselfjoin2predicates {
 		};
 
 		// Compute L1,L2
+		long startTime2 = System.nanoTime();
 		if (op1 == 2 || op1 == 1) {
 			Arrays.sort(L1, descDuration);
 		} else if (op1 == 3 || op1 == 4) {
 			Arrays.sort(L1, ascDuration);
 		}
+	
 
 		if (op2 == 1 || op2 == 2) {
 			Arrays.sort(L2, ascCost);
 		} else if (op2 == 3 || op2 == 4) {
 			Arrays.sort(L2, descCost);
 		}
-
+		long endTime2 = System.nanoTime();
 		// Compute permutation arrays - P
 		int i = 0;
 		for (Tuple myTuple : L2) {
@@ -155,22 +158,18 @@ public class IEselfjoin2predicates {
 			eqOff = 0;
 		else
 			eqOff = 1;
-
 		// Visit
+ 		long startTime3 = System.nanoTime();
 		//usingBitsetNaive(join_result, eqOff);
 		usingBitsetOptimized(join_result, eqOff);
 		//usingBloomFilter(join_result, eqOff, 2);
+		long endTime3 = System.nanoTime();
+		long endTime1 = System.nanoTime();
+		System.out.println("Time taken Total = "+(endTime1 - startTime1) + " ns"); 
+		System.out.println("Time taken preprocessing = "+(endTime2 - startTime2) + " ns"); 
+		System.out.println("Time taken Visiting = "+(endTime3 - startTime3) + " ns"); 
 		return join_result;
 	}
-	/* f
- +		for (i = 0; i < n; i++) {
-  			int pos = p[i];
-  			bp[pos]=1
-  			 for (int k = pos + eqOff; k < n; k++) { // TODO: check initialization
-  				if (bp[k] == 1) {
-  					join_result.add(new MyTuple[] { L1[k], L1[i] });
-  				}
-  			}*/
 	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
@@ -264,10 +263,13 @@ public class IEselfjoin2predicates {
 		Tuple t4 = create(742, 90, 9, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,4,1);
+		IEselfjoin2predicates ieselfjoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,1);
+		ieselfjoin.printResults();
+		}
+	public void printResults() throws FieldNumberOutOfBoundException, IOException {
 		ArrayList<Tuple[]> result = null;
 		try {
-			result = iejoin.run();
+			result = this.run();
 		} catch (FieldNumberOutOfBoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
