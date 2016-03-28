@@ -119,7 +119,7 @@ public class ReadInput {
 						}
 						*/
 					}
-					System.out.println(schema.toString());
+					//System.out.println(schema.toString());
 					break;
 				} else {
 					/*
@@ -281,7 +281,7 @@ public class ReadInput {
 	    
 	    
 		String line = null;
-		String queryFilePath = "/tmp/query_1b.txt";
+		String queryFilePath = "/tmp/query_1a.txt";
 		String sourceDirPath = "/tmp/";
 		Integer question1b = 1;
 
@@ -618,10 +618,10 @@ public class ReadInput {
 			  }
 			  long endTime = System.nanoTime();
 			  long duration = (endTime - startTime);  
-			  System.out.println("time");
-			  System.out.println(duration);
+			  //System.out.println("time");
+			  //System.out.println(duration);
 
-			    System.out.println ("\n"); 
+			    //System.out.println ("\n"); 
 			    try 
 			    {
 			      nl1.close();
@@ -638,14 +638,14 @@ public class ReadInput {
 			      System.err.println ("*** Error setting up scan for reserves");
 			      Runtime.getRuntime().exit(1);
 			    } 
-			    System.out.println("Done");
+			    //System.out.println("Done");
 			    
 			} else if (filesToRead.length == 1) {
 				System.out.println("Running query2a");
 				// query_2a();
 				// variable queryList is [Q_1 Q_1,Q, Q_3 1 Q_3]
 				// variable queryList is [R_1 R_1, R, R_3 2 S_3]
-				System.out.println(queryList.get(0));
+				//System.out.println(queryList.get(0));
 				int proj = Integer.parseInt(queryList.get(0).split(" ")[0].trim().split("_")[1].trim())+3; // get 1 from R_1 R_1
 				
 				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
@@ -1007,7 +1007,7 @@ public class ReadInput {
 				      System.err.println ("*** Error setting up scan for reserves");
 				      Runtime.getRuntime().exit(1);
 				    } 
-				    System.out.println("Done b");
+				    //System.out.println("Done b");
 
 					
 				}
