@@ -134,7 +134,7 @@ public class IEselfjoin2predicates {
 
 		if (op2 == 1 || op2 == 2) {
 			Arrays.sort(L2, ascCost);
-		} else if (op2 == 4 || op2 == 3) {
+		} else if (op2 == 3 || op2 == 4) {
 			Arrays.sort(L2, descCost);
 		}
 
@@ -158,16 +158,23 @@ public class IEselfjoin2predicates {
 
 		// Visit
 		//usingBitsetNaive(join_result, eqOff);
-		// usingBitsetOptimized(join_result, eqOff);
-		usingBloomFilter(join_result, eqOff, 2);
+		usingBitsetOptimized(join_result, eqOff);
+		//usingBloomFilter(join_result, eqOff, 2);
 		return join_result;
 	}
+	/* f
+ +		for (i = 0; i < n; i++) {
+  			int pos = p[i];
+  			bp[pos]=1
+  			 for (int k = pos + eqOff; k < n; k++) { // TODO: check initialization
+  				if (bp[k] == 1) {
+  					join_result.add(new MyTuple[] { L1[k], L1[i] });
+  				}
+  			}*/
 	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
-			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
-				bp.set(off2); // = 1;
-			}
+			bp.set(off2);
 			for (int k = off2 + eqOff; k < n; k++) { // TODO: check initialization
 				if (bp.get(k)) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
@@ -176,29 +183,13 @@ public class IEselfjoin2predicates {
 			}
 		}
 	}
-	// set the bloom filter pos
-	// c = bp.getNext(pos + eqOff)
-//	while(c >= 0) { 
-//	k = Math.max(k, c);
-//	int limit = Math.min(c + reduction_factor + 1, L1p.length);
-//	while (k < limit) {
-//		if (bp.get(k)) {
-//			join_result.add(new Tuple[] { L2[i], L2p[k] });
-//		}
-//		k++;
-//	}
-//	c = b.nextSetChunk(k);
-//}
-//System.out.println(join_result.toString());
 
 	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
 		BloomFilter b = new BloomFilter(L1.length, reduction_factor);
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
-			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
-				bp.set(off2); // = 1;
-				b.setBit(off2);
-			}
+			bp.set(off2); // = 1;
+			b.setBit(off2);
 			int k = off2 + eqOff;
 			int c = b.nextSetChunk(k); // TODO: check initialization
 			while (c >= 0) {
@@ -219,9 +210,7 @@ public class IEselfjoin2predicates {
 	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
-			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
-				bp.set(off2); // = 1;
-			}
+			bp.set(off2); // = 1;
 			int k = bp.nextSetBit(off2 + eqOff); // TODO: check initialization
 			while (k >= 0) {
 				// add tuples w.r.t. (L1[i],L1[k]) to join result
@@ -275,11 +264,7 @@ public class IEselfjoin2predicates {
 		Tuple t4 = create(742, 90, 9, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,1,4);
-		// TODO: Incorrect answer for the below case
-		// iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
-		// new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
-
+		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,4,1);
 		ArrayList<Tuple[]> result = null;
 		try {
 			result = iejoin.run();
