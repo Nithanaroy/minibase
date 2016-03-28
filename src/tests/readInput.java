@@ -606,7 +606,7 @@ public class ReadInput {
 				  Integer count = 0;
 			    while((t=nl1.get_next())!= null )
 			    {
-			      //t.print(JJtype);
+			      t.print(JJtype);
 			      count++;
 			    }
 			  }
@@ -710,21 +710,21 @@ public class ReadInput {
 						schematype2 = loffset;
 						innerOffset = Integer.parseInt(ldata[1]);
 					}
-					CondExpr[] outFilter = new CondExpr[3];
-					outFilter[0] = new CondExpr();
-					outFilter[1] = new CondExpr();
-					outFilter[2] = new CondExpr();
+					CondExpr[] outFilter1 = new CondExpr[3];
+					outFilter1[0] = new CondExpr();
+					
+					
 
 					op1 = Integer.parseInt(querySplit[1]);
 					op1=mapOP(op1);
-					outFilter[0].next = null;
-					outFilter[0].op = new AttrOperator(op1);
-					outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-					outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset);
-					outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
-					outFilter[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset);
+					outFilter1[0].next = null;
+					outFilter1[0].op = new AttrOperator(op1);
+					outFilter1[0].type1 = new AttrType(AttrType.attrSymbol);
+					outFilter1[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset);
+					outFilter1[0].type2 = new AttrType(AttrType.attrSymbol);
+					outFilter1[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset);
 
-					System.out.println(queryList.toString());
+					
 					query = queryList.get(4);
 					querySplit = query.split(" ");
 					ldata = querySplit[0].split("_");
@@ -750,21 +750,17 @@ public class ReadInput {
 
 					Integer op2 = Integer.parseInt(querySplit[1]);
 					op2=mapOP(op2);
-					outFilter[1].next = null;
-					outFilter[1].op = new AttrOperator(op2);
-					outFilter[1].type1 = new AttrType(AttrType.attrSymbol);
+					outFilter1[1] = new CondExpr();
+					outFilter1[1].next = null;
+					outFilter1[1].op = new AttrOperator(op2);
+					outFilter1[1].type1 = new AttrType(AttrType.attrSymbol);
 					
-					outFilter[1].type2 = new AttrType(AttrType.attrSymbol);
-					outFilter[1].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset1);
-					outFilter[1].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset1);
+					outFilter1[1].type2 = new AttrType(AttrType.attrSymbol);
+					outFilter1[1].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset1);
+					outFilter1[1].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset1);
 					
-					outFilter[2] = null;
-					System.out.println(outerOffset);
-					System.out.println(outerOffset1);
-					System.out.println(innerOffset);
-					System.out.println(innerOffset1);
-					System.out.println(op1);
-					System.out.println(op2);
+					outFilter1[2] = new CondExpr();
+					outFilter1[2] = null;
 					//-Xms 2048M -Xmx4096M
 					
 					AttrType Stypes[] = new AttrType[schemaOutter.size()];
@@ -946,7 +942,7 @@ public class ReadInput {
 				      nl1= new NestedLoopsJoins(Stypes, schemaOutter.size(), Ssizes,   
 				                                Rtypes, schemaInner.size(), Rsizes,
 				                                10, am, filesToRead[1]+".in",
-				                                outFilter, null, proj_list,proj_list.length);
+				                                outFilter1, null, proj_list,proj_list.length);
 				    }
 
 				  catch (Exception e) 
@@ -984,7 +980,7 @@ public class ReadInput {
 				      //t.print(JJtype);
 				      count++;
 				    }
-				    System.out.println(count);
+				    //System.out.println(count);
 				  }
 				  catch(Exception e)
 				  {
