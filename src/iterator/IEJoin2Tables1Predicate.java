@@ -24,13 +24,16 @@ public class IEJoin2Tables1Predicate {
 	Tuple[] t2;
 	int op1;
 	int totalTuples = 0;
+	int[] t1ProjColIndices;
+	int[] t2ProjColIndices;
 
-	public IEJoin2Tables1Predicate(Tuple[] l1, Tuple[] l2, int op1) {
+	public IEJoin2Tables1Predicate(Tuple[] l1, Tuple[] l2, int op1, int[] t1ProCols, int[] t2ProCols) {
 		super();
 		t1 = l1;
 		t2 = l2;
 		this.op1 = op1;
-
+		this.t1ProjColIndices = t1ProCols;
+		this.t2ProjColIndices = t2ProCols;
 	}
 
 	// [1] => id, [2] => time/duration, [3] and above => others
@@ -63,7 +66,7 @@ public class IEJoin2Tables1Predicate {
 		Arrays.sort(t1, ascending);
 		Arrays.sort(t2, ascending);
 
-		System.out.println("Pre-processing time: " + (System.currentTimeMillis() - start));
+		System.out.format("Pre-processing time: %dms%n", (System.currentTimeMillis() - start));
 
 		for (Tuple t : t1) {
 			int i = Arrays.binarySearch(t2, t, ascending);
@@ -95,14 +98,14 @@ public class IEJoin2Tables1Predicate {
 
 		}
 
-		System.out.println("Total tuples: " + totalTuples);
+		// System.out.println("Total tuples in join result: " + totalTuples);
 		return join_result;
 
 	}
 
 	private void addSucceedingTuples(ArrayList<Tuple[]> join_result, Tuple t, int i) {
 		while (i < t2.length) {
-			// join_result.add(new Tuple[] { t, t2[i] });
+			join_result.add(new Tuple[] { t, t2[i] });
 			totalTuples++;
 			i++;
 		}
@@ -110,7 +113,7 @@ public class IEJoin2Tables1Predicate {
 
 	private void addPrecedingTuples(ArrayList<Tuple[]> join_result, Tuple t, int i) {
 		while (i >= 0) {
-			// join_result.add(new Tuple[] { t, t2[i] });
+			join_result.add(new Tuple[] { t, t2[i] });
 			totalTuples++;
 			i--;
 		}
@@ -124,10 +127,6 @@ public class IEJoin2Tables1Predicate {
 		t.setIntFld(2, duration);
 		t.setIntFld(3, cost);
 		return t;
-	}
-
-	public static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
-		return String.format("[%d, %d, %d]", t.getIntFld(1), t.getIntFld(2), t.getIntFld(3));
 	}
 
 	public static void main(String[] args)
@@ -152,10 +151,21 @@ public class IEJoin2Tables1Predicate {
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
 		System.out.println("Query: More time");
-		IEJoin2Tables1Predicate iejoin = new IEJoin2Tables1Predicate(new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 1);
+		IEJoin2Tables1Predicate iejoin = new IEJoin2Tables1Predicate(new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 1,
+				new int[] { 1 }, new int[] { 1 });
 
 		iejoin.executeAndPrintResults();
 
+	}
+
+	public static String tupleToString(Tuple t, int[] projectionIndices) throws FieldNumberOutOfBoundException, IOException {
+		StringBuilder sb = new StringBuilder();
+		for (int col : projectionIndices) {
+			sb.append(t.getIntFld(col) + ", ");
+		}
+		int len = sb.length();
+
+		return sb.toString().substring(0, len - 2); // remove trailing space and comma
 	}
 
 	public void executeAndPrintResults() throws FieldNumberOutOfBoundException, IOException {
@@ -168,7 +178,7 @@ public class IEJoin2Tables1Predicate {
 			e.printStackTrace();
 		}
 		for (Tuple[] myTuples : result) {
-			System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
+			System.out.format("[%s, %s]\n", tupleToString(myTuples[0], t1ProjColIndices), tupleToString(myTuples[1], t2ProjColIndices));
 		}
 	}
 

@@ -32,15 +32,19 @@ public class IEJoin2Tables2Predicates {
 	int n;
 	int op1;
 	int op2;
+	int[] t1ProjColIndices;
+	int[] t2ProjColIndices;
 
 	private int[] p, pp, o1, o2;
 	private BitSet bp;
 
-	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l1p, int op1, int op2) {
+	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l1p, int op1, int op2, int[] t1ProCols, int[] t2ProCols) {
 		this(l1, l1.clone(), l1p, l1p.clone(), l1.length, l1p.length, op1, op2);
+		this.t1ProjColIndices = t1ProCols;
+		this.t2ProjColIndices = t2ProCols;
 	}
 
-	public IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l2, Tuple[] l1p, Tuple[] l2p, int m, int n, int op1, int op2) {
+	private IEJoin2Tables2Predicates(Tuple[] l1, Tuple[] l2, Tuple[] l1p, Tuple[] l2p, int m, int n, int op1, int op2) {
 		super();
 		L1 = l1;
 		L2 = l2;
@@ -50,6 +54,8 @@ public class IEJoin2Tables2Predicates {
 		this.n = n;
 		this.op1 = op1;
 		this.op2 = op2;
+		t1ProjColIndices = new int[] { 0 }; // project id for T1
+		t2ProjColIndices = new int[] { 0 }; // project id for T2
 
 		p = new int[l1.length];
 		pp = new int[l1p.length];
@@ -186,11 +192,11 @@ public class IEJoin2Tables2Predicates {
 		else
 			eqOff = 1;
 
-		System.out.println("Preprocessing time: " + (System.currentTimeMillis() - start));
+		System.out.format("Preprocessing time: %dms\n", (System.currentTimeMillis() - start));
 		// Visit
 		// usingBitsetNaive(join_result, eqOff);
-		// usingBitsetOptimized(join_result, eqOff);
-		usingBloomFilter(join_result, eqOff, 2);
+		usingBitsetOptimized(join_result, eqOff);
+		// usingBloomFilter(join_result, eqOff, 2);
 
 		return join_result;
 
@@ -345,10 +351,6 @@ public class IEJoin2Tables2Predicates {
 		return t;
 	}
 
-	public static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
-		return String.format("[%d, %d, %d]", t.getIntFld(1), t.getIntFld(2), t.getIntFld(3));
-	}
-
 	public static void main(String[] args)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		// Setting the types
@@ -378,11 +380,11 @@ public class IEJoin2Tables2Predicates {
 		// iejoin = new IEJoin2Tables2Predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 },
 		// new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
 
-		iejoin.printResults();
+		iejoin.executeAndPrintResults();
 
 	}
 
-	public void printResults() throws FieldNumberOutOfBoundException, IOException {
+	public void executeAndPrintResults() throws FieldNumberOutOfBoundException, IOException {
 		ArrayList<Tuple[]> result = null;
 		try {
 			result = this.run();
@@ -392,7 +394,8 @@ public class IEJoin2Tables2Predicates {
 			e.printStackTrace();
 		}
 		for (Tuple[] myTuples : result) {
-			System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
+			System.out.format("[%s, %s]\n", IEJoin2Tables1Predicate.tupleToString(myTuples[0], t1ProjColIndices),
+					IEJoin2Tables1Predicate.tupleToString(myTuples[1], t2ProjColIndices));
 		}
 	}
 
