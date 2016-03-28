@@ -60,6 +60,7 @@ public class IEJoin2Tables2Predicates {
 
 	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
+		long start = System.currentTimeMillis();
 		// TODO: Decide what to do when exception is raised
 		ArrayList<Tuple[]> join_result = new ArrayList<>();
 		Comparator<Tuple> ascDuration = new Comparator<Tuple>() {
@@ -185,6 +186,7 @@ public class IEJoin2Tables2Predicates {
 		else
 			eqOff = 1;
 
+		System.out.println("Preprocessing time: " + (System.currentTimeMillis() - start));
 		// Visit
 		// usingBitsetNaive(join_result, eqOff);
 		// usingBitsetOptimized(join_result, eqOff);
@@ -195,6 +197,7 @@ public class IEJoin2Tables2Predicates {
 	}
 
 	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
+		System.out.println("Using BitSet Naive");
 		for (int i = 0; i < m; i++) {
 			int off2 = o2[i];
 			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
@@ -211,6 +214,7 @@ public class IEJoin2Tables2Predicates {
 	}
 
 	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
+		System.out.println("Using BitSet + Bloom Filter\n Reduction factor: " + reduction_factor);
 		BloomFilter b = new BloomFilter(L1p.length, reduction_factor);
 		for (int i = 0; i < m; i++) {
 			int off2 = o2[i];
@@ -237,6 +241,7 @@ public class IEJoin2Tables2Predicates {
 	}
 
 	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
+		System.out.println("Using BitSet + BitSet optimized");
 		for (int i = 0; i < m; i++) {
 			int off2 = o2[i];
 			for (int j = 0; j <= Math.min(off2, n - 1); j++) {
