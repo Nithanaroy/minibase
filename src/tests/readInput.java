@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Vector;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 //import sun.security.action.LoadLibraryAction;
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import global.AttrOperator;
@@ -18,8 +21,11 @@ import global.AttrType;
 import global.GlobalConst;
 import global.RID;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import global.SystemDefs;
 import global.TupleOrder;
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import heap.FieldNumberOutOfBoundException;
@@ -36,6 +42,7 @@ import iterator.IESelfJoin1Predicate;
 import iterator.NestedLoopsJoins;
 import iterator.RelSpec;
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 public class ReadInput {
 	  public static final int MINIBASE_MAXARRSIZE = 50;
@@ -67,6 +74,9 @@ public class ReadInput {
 
 	  public static final int INVALID_PAGE = -1;
 	  
+=======
+public class readInput {
+>>>>>>> Stashed changes
 =======
 public class readInput {
 >>>>>>> Stashed changes
@@ -261,6 +271,7 @@ public class readInput {
 	public static void main(String args[]) 
 			throws IOException, FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 		
 	    boolean status = true;
 	    int numsailors = 10;
@@ -291,6 +302,8 @@ public class readInput {
 	    
 	    
 =======
+=======
+>>>>>>> Stashed changes
 
 		boolean status = true;
 		int numsailors = 10;
@@ -316,6 +329,9 @@ public class readInput {
 			System.err.println("" + e);
 		}
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		String line = null;
 		String queryFilePath = "/Volumes/350GB/Documents/workspace/minibase/data/query_2a.txt";
@@ -438,6 +454,7 @@ public class readInput {
 				Ssizes[0] = 0;
 				Tuple t = new Tuple();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 			    try {
 			      t.setHdr((short) schemaOutter.size(),Stypes, null);
 			    }
@@ -505,6 +522,8 @@ public class readInput {
 			    }
 			    
 =======
+=======
+>>>>>>> Stashed changes
 				try {
 					t.setHdr((short) schemaOutter.size(), Stypes, Ssizes);
 				} catch (Exception e) {
@@ -563,6 +582,9 @@ public class readInput {
 					Runtime.getRuntime().exit(1);
 				}
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 				AttrType Rtypes[] = new AttrType[schemaInner.size()];
 				FldSpec[] Rprojection = new FldSpec[schemaInner.size()];
@@ -576,6 +598,7 @@ public class readInput {
 				Vector reserves = ri.loadList("/tmp/" + filesToRead[1] + ".txt", schemaInner);
 
 				t = new Tuple();
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 			    try {
 			      t.setHdr((short) 4,Rtypes, null);
@@ -747,6 +770,70 @@ public class readInput {
 				}
 
 				iterator.Iterator am = null;
+=======
+				try {
+					t.setHdr((short) 4, Rtypes, Rsizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				size = t.size();
+
+				// inserting the tuple into file "reserves"
+				// RID rid;
+				f = null;
+				try {
+					System.out.println(filesToRead[1]);
+					f = new Heapfile(filesToRead[1] + ".in");
+				} catch (Exception e) {
+					System.err.println("*** error in Heapfile constructor ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				t = new Tuple(size);
+				try {
+					t.setHdr((short) schemaInner.size(), Rtypes, Rsizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+				//////////
+
+				////////////
+
+				for (int i = 0; i < numreserves; i++) {
+					try {
+						for (int j = 0; j < schemaInner.size(); j++) {
+							Vector tmpVector = (Vector) reserves.get(i);
+							t.setIntFld(j + 1, (int) tmpVector.get(j));
+						}
+
+					} catch (Exception e) {
+						System.err.println("*** error in Tuple.setStrFld() ***");
+						status = false;
+						e.printStackTrace();
+					}
+
+					try {
+						rid = f.insertRecord(t.returnTupleByteArray());
+					} catch (Exception e) {
+						System.err.println("*** error in Heapfile.insertRecord() ***");
+						status = false;
+						e.printStackTrace();
+					}
+				}
+				if (status != true) {
+					// bail out
+					System.err.println("*** Error creating relation for reserves");
+					Runtime.getRuntime().exit(1);
+				}
+
+				iterator.Iterator am = null;
+>>>>>>> Stashed changes
 				try {
 					am = new FileScan(filesToRead[1] + ".in", Rtypes, Rsizes, (short) schemaInner.size(), (short) schemaInner.size(),
 							Rprojection, null);
@@ -781,6 +868,9 @@ public class readInput {
 					Runtime.getRuntime().exit(1);
 				}
 				AttrType[] JJtype = new AttrType[data.length];
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 				for (int i = 0; i < data.length; i++) {
 					JJtype[i]=new AttrType(AttrType.attrInteger);
@@ -791,6 +881,7 @@ public class readInput {
 					} else {
 						JJtype[i] = new AttrType(schemaInner.get(Integer.parseInt(results[1]) - 1));
 					}
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 					*/
 				}			  
@@ -832,6 +923,8 @@ public class readInput {
 			    System.out.println("Done");
 			    
 =======
+=======
+>>>>>>> Stashed changes
 				}
 				t = null;
 
@@ -859,6 +952,9 @@ public class readInput {
 					System.err.println("*** Error setting up scan for reserves");
 					Runtime.getRuntime().exit(1);
 				}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 			} else if (filesToRead.length == 1) {
 				System.out.println("Running query2a");
