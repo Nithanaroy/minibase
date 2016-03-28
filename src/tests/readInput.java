@@ -281,7 +281,7 @@ public class ReadInput {
 	    
 	    
 		String line = null;
-		String queryFilePath = "/home/rajesh/Dropbox/SaRaj/Study/sem 2/DBMI/phase 3/query_1b.txt";
+		String queryFilePath = "/tmp/query_1b.txt";
 		String sourceDirPath = "/tmp/";
 		Integer question1b = 1;
 
@@ -564,7 +564,7 @@ public class ReadInput {
 			      System.err.println ("*** Error setting up scan for sailors");
 			      Runtime.getRuntime().exit(1);
 			    }
-			    
+			    long startTime = System.nanoTime();
 			    NestedLoopsJoins nl1= null;
 			    try
 			    {
@@ -606,7 +606,7 @@ public class ReadInput {
 				  Integer count = 0;
 			    while((t=nl1.get_next())!= null )
 			    {
-			      t.print(JJtype);
+			      //t.print(JJtype);
 			      count++;
 			    }
 			  }
@@ -616,7 +616,10 @@ public class ReadInput {
 			    e.printStackTrace();
 			    Runtime.getRuntime().exit(1);
 			  }
-
+			  long endTime = System.nanoTime();
+			  long duration = (endTime - startTime);  
+			  System.out.println("time");
+			  System.out.println(duration);
 
 			    System.out.println ("\n"); 
 			    try 
@@ -729,45 +732,40 @@ public class ReadInput {
 					loffset = AttrType.attrSymbol;
 					roffset = AttrType.attrSymbol;
 
+					Integer outerOffset1;
+					Integer innerOffset1;
 					
 					if (getProjInfo(filesToRead, ldata[0]) == 1) {
 						schematype1 = loffset;
-						outerOffset = Integer.parseInt(ldata[1]);
+						outerOffset1 = Integer.parseInt(ldata[1]);
 						schematype2 = roffset;
-						innerOffset = Integer.parseInt(rdata[1]);
+						innerOffset1 = Integer.parseInt(rdata[1]);
 					} else {
 						schematype1 = roffset;
-						outerOffset = Integer.parseInt(rdata[1]);
+						outerOffset1 = Integer.parseInt(rdata[1]);
 						schematype2 = loffset;
-						innerOffset = Integer.parseInt(ldata[1]);
+						innerOffset1 = Integer.parseInt(ldata[1]);
 					}
 
 
-					op1 = Integer.parseInt(querySplit[1]);
-					op1=mapOP(op1);
+					Integer op2 = Integer.parseInt(querySplit[1]);
+					op2=mapOP(op2);
 					outFilter[1].next = null;
-					outFilter[1].op = new AttrOperator(op1);
+					outFilter[1].op = new AttrOperator(op2);
 					outFilter[1].type1 = new AttrType(AttrType.attrSymbol);
-					outFilter[1].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset);
+					
 					outFilter[1].type2 = new AttrType(AttrType.attrSymbol);
-					outFilter[1].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset);
+					outFilter[1].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset1);
+					outFilter[1].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset1);
 					
 					outFilter[2] = null;
-					
-					CondExpr[] outFilter1 = new CondExpr[2];
-					outFilter1[0] = new CondExpr();
-					outFilter1[1] = new CondExpr();
-					op1 = Integer.parseInt(querySplit[1]);
-					op1=mapOP(op1);
-					outFilter1[0].next = null;
-					outFilter1[0].op = new AttrOperator(op1);
-					outFilter1[0].type1 = new AttrType(AttrType.attrSymbol);
-					outFilter1[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), outerOffset);
-					outFilter1[0].type2 = new AttrType(AttrType.attrSymbol);
-					outFilter1[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), innerOffset);
-					
-					outFilter1[1] = null;
-					
+					System.out.println(outerOffset);
+					System.out.println(outerOffset1);
+					System.out.println(innerOffset);
+					System.out.println(innerOffset1);
+					System.out.println(op1);
+					System.out.println(op2);
+					//-Xms 2048M -Xmx4096M
 					
 					AttrType Stypes[] = new AttrType[schemaOutter.size()];
 					FldSpec[] Sprojection = new FldSpec[schemaOutter.size()];
@@ -948,7 +946,7 @@ public class ReadInput {
 				      nl1= new NestedLoopsJoins(Stypes, schemaOutter.size(), Ssizes,   
 				                                Rtypes, schemaInner.size(), Rsizes,
 				                                10, am, filesToRead[1]+".in",
-				                                outFilter, null, proj_list,2);
+				                                outFilter, null, proj_list,proj_list.length);
 				    }
 
 				  catch (Exception e) 
@@ -983,7 +981,7 @@ public class ReadInput {
 					  Integer count=0;
 				    while((t=nl1.get_next())!= null )
 				    {
-				      t.print(JJtype);
+				      //t.print(JJtype);
 				      count++;
 				    }
 				    System.out.println(count);
