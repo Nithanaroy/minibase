@@ -171,6 +171,7 @@ public class IEselfjoin2predicates {
 		return join_result;
 	}
 	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
+		int count=0;
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
 			bp.set(off2);
@@ -178,9 +179,12 @@ public class IEselfjoin2predicates {
 				if (bp.get(k)) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
 					join_result.add(new Tuple[] { L1[k], L1[p[i]] });
+					count++;
+				
 				}
 			}
 		}
+		System.out.println("Count "+count);
 	}
 
 	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
@@ -207,16 +211,20 @@ public class IEselfjoin2predicates {
 	}
 
 	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
+		int count=0;
 		for (int i = 0; i < n; i++) {
 			int off2 = p[i];
 			bp.set(off2); // = 1;
-			int k = bp.nextSetBit(off2 + eqOff); // TODO: check initialization
+			int k = bp.nextSetBit(off2 + eqOff);
+			// TODO: check initialization
 			while (k >= 0) {
 				// add tuples w.r.t. (L1[i],L1[k]) to join result
 				join_result.add(new Tuple[] { L1[k], L1[p[i]] });
+				count++;
 				k = bp.nextSetBit(k + 1);
 			}
 		}
+			System.out.println("Count "+count);
 	}
 
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
