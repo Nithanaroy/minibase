@@ -5,18 +5,23 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
+<<<<<<< Updated upstream
 //import sun.security.action.LoadLibraryAction;
 
+=======
+>>>>>>> Stashed changes
 import global.AttrOperator;
 import global.AttrType;
 import global.GlobalConst;
 import global.RID;
+<<<<<<< Updated upstream
 import global.SystemDefs;
 import global.TupleOrder;
+=======
+>>>>>>> Stashed changes
 import heap.FieldNumberOutOfBoundException;
 import heap.Heapfile;
 import heap.InvalidTupleSizeException;
@@ -25,11 +30,13 @@ import heap.Tuple;
 import iterator.CondExpr;
 import iterator.FileScan;
 import iterator.FldSpec;
+import iterator.IEJoin2Tables2Predicates;
+import iterator.IESelfJoin1Predicate;
 //import iterator.IEJoin2Tables2Predicates;
 import iterator.NestedLoopsJoins;
 import iterator.RelSpec;
-import iterator.Sort;
 
+<<<<<<< Updated upstream
 public class ReadInput {
 	  public static final int MINIBASE_MAXARRSIZE = 50;
 	  public static final int NUMBUF = 50;
@@ -60,41 +67,43 @@ public class ReadInput {
 
 	  public static final int INVALID_PAGE = -1;
 	  
+=======
+public class readInput {
+>>>>>>> Stashed changes
 	public enum Predicate {
 		singlePredicate, doublePredicate, unknown;
 	}
-	public Vector loadList(String filename,ArrayList<Integer> schema)
-	{
-		 Vector	reserves = new Vector();
-	    
-	    try {
-	    FileReader fileReader = new FileReader(filename);
-	    BufferedReader bufferedReader1 = new BufferedReader(fileReader);
 
-		// Reading Reserves data into reserves vector
-	    String line = null;
-	    while((line = bufferedReader1.readLine()) != null) {
-	    	String[] temp = line.split(",");
-		int[] arr = new int[schema.size()];
-		Vector	tmpvector = new Vector();
-		for (int i = 0;i<schema.size();i++){
-			arr[i] = Integer.parseInt(temp[i]);
-			tmpvector.add(arr[i]);
+	public Vector loadList(String filename, ArrayList<Integer> schema) {
+		Vector reserves = new Vector();
+
+		try {
+			FileReader fileReader = new FileReader(filename);
+			BufferedReader bufferedReader1 = new BufferedReader(fileReader);
+
+			// Reading Reserves data into reserves vector
+			String line = null;
+			while ((line = bufferedReader1.readLine()) != null) {
+				String[] temp = line.split(",");
+				int[] arr = new int[schema.size()];
+				Vector tmpvector = new Vector();
+				for (int i = 0; i < schema.size(); i++) {
+					arr[i] = Integer.parseInt(temp[i]);
+					tmpvector.add(arr[i]);
+				}
+				reserves.addElement(tmpvector);
+			}
+			// System.out.println("data" + ((Reserves)reserves.get(0)).r_1);
+			bufferedReader1.close();
+		} catch (FileNotFoundException ex) {
+			System.out.println("Unable to open file  " + filename + ".txt");
+		} catch (IOException ex) {
+			System.out.println("Error reading file " + filename + ".txt");
 		}
-		reserves.addElement(tmpvector);
-	    }
-	    //System.out.println("data" + ((Reserves)reserves.get(0)).r_1);
-	    bufferedReader1.close();         
+
+		return reserves;
 	}
-	    catch(FileNotFoundException ex) {
-	    	System.out.println("Unable to open file  "+filename+".txt");                
-	    }
-	    catch(IOException ex) {
-	    	System.out.println("Error reading file "+filename+".txt");                  
-	    }
-	    
-	    return reserves;
-	}
+
 	public ArrayList<Integer> readFile(String filepath) {
 		String line = null;
 
@@ -110,14 +119,14 @@ public class ReadInput {
 					for (int i = 0; i < dataFields.length; ++i) {
 						schema.add(AttrType.attrInteger);
 						/*
-						if (dataFields[i].equals("attrInteger")) {
-							schema.add(AttrType.attrInteger);
-						} else if (dataFields[i].equals("attrString")) {
-							schema.add(AttrType.attrString);
-						} else if (dataFields[i].equals("attrNull")) {
-							schema.add(AttrType.attrNull);
-						}
-						*/
+						 * if (dataFields[i].equals("attrInteger")) {
+						 * schema.add(AttrType.attrInteger);
+						 * } else if (dataFields[i].equals("attrString")) {
+						 * schema.add(AttrType.attrString);
+						 * } else if (dataFields[i].equals("attrNull")) {
+						 * schema.add(AttrType.attrNull);
+						 * }
+						 */
 					}
 					System.out.println(schema.toString());
 					break;
@@ -227,10 +236,10 @@ public class ReadInput {
 				String[] tupleData = line.split(",");
 				Tuple t = new Tuple();
 				t.setHdr((short) columnsCount, Stypes, null);
-				//t.setIntFld(1, counter++); // id column
-				setTuple(t, Stypes[pos1-1], String.valueOf(counter++), 1);
-				setTuple(t, Stypes[pos1-1], tupleData[pos1-1], 2); // condition one column
-				setTuple(t, Stypes[pos2-1], tupleData[pos2-1], 3); // condition two column
+				// t.setIntFld(1, counter++); // id column
+				setTuple(t, Stypes[pos1 - 1], String.valueOf(counter++), 1);
+				setTuple(t, Stypes[pos1 - 1], tupleData[pos1 - 1], 2); // condition one column
+				setTuple(t, Stypes[pos2 - 1], tupleData[pos2 - 1], 3); // condition two column
 				for (int i = 0; i < tupleData.length; i++) {
 					setTuple(t, Stypes[i], tupleData[i], i + 3);
 				}
@@ -251,6 +260,7 @@ public class ReadInput {
 	
 	public static void main(String args[]) 
 			throws IOException, FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
+<<<<<<< Updated upstream
 		
 	    boolean status = true;
 	    int numsailors = 10;
@@ -280,9 +290,36 @@ public class ReadInput {
 	    }
 	    
 	    
+=======
+
+		boolean status = true;
+		int numsailors = 10;
+		int numsailors_attrs = 4;
+		int numreserves = 10;
+		int numreserves_attrs = 4;
+
+		String dbpath = "/tmp/" + System.getProperty("user.name") + ".minibase.jointestdb";
+		String logpath = "/tmp/" + System.getProperty("user.name") + ".joinlog";
+
+		String remove_cmd = "/bin/rm -rf ";
+		String remove_logcmd = remove_cmd + logpath;
+		String remove_dbcmd = remove_cmd + dbpath;
+		String remove_joincmd = remove_cmd + dbpath;
+
+		// SystemDefs sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+
+		try {
+			Runtime.getRuntime().exec(remove_logcmd);
+			Runtime.getRuntime().exec(remove_dbcmd);
+			Runtime.getRuntime().exec(remove_joincmd);
+		} catch (IOException e) {
+			System.err.println("" + e);
+		}
+
+>>>>>>> Stashed changes
 		String line = null;
-		String queryFilePath = "/home/rajesh/Dropbox/SaRaj/Study/sem 2/DBMI/phase 3/query_1a.txt";
-		String sourceDirPath = "/tmp/";
+		String queryFilePath = "/Volumes/350GB/Documents/workspace/minibase/data/query_2a.txt";
+		String sourceDirPath = "/Volumes/350GB/Documents/workspace/minibase/data/";
 		Integer question1b = 1;
 
 		if (args.length == 3) {
@@ -347,12 +384,11 @@ public class ReadInput {
 			// predicateType = Predicate.singlePredicate;
 			if (filesToRead.length == 2) {
 				System.out.println("Running query1a");
-				
-				ReadInput ri = new ReadInput();
+
+				readInput ri = new readInput();
 				ArrayList<Integer> schemaOutter = ri.readFile(sourceDirPath + filesToRead[0] + ".txt");
 				ArrayList<Integer> schemaInner = ri.readFile(sourceDirPath + filesToRead[1] + ".txt");
 
-				
 				String query = queryList.get(2);
 				String querySplit[] = query.split(" ");
 				String ldata[] = querySplit[0].split("_");
@@ -401,6 +437,7 @@ public class ReadInput {
 				short[] Ssizes = new short[1];
 				Ssizes[0] = 0;
 				Tuple t = new Tuple();
+<<<<<<< Updated upstream
 			    try {
 			      t.setHdr((short) schemaOutter.size(),Stypes, null);
 			    }
@@ -467,6 +504,66 @@ public class ReadInput {
 			      Runtime.getRuntime().exit(1);
 			    }
 			    
+=======
+				try {
+					t.setHdr((short) schemaOutter.size(), Stypes, Ssizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				int size = t.size();
+
+				// inserting the tuple into file "sailors"
+				RID rid;
+				Heapfile f = null;
+				try {
+					f = new Heapfile(filesToRead[0] + ".in");
+				} catch (Exception e) {
+					System.err.println("*** error in Heapfile constructor ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				t = new Tuple(size);
+				try {
+					t.setHdr((short) schemaOutter.size(), Stypes, Ssizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+				Vector sailors = ri.loadList("/tmp/" + filesToRead[0] + ".txt", schemaOutter);
+				for (int i = 0; i < numsailors; i++) {
+					try {
+						for (int j = 0; j < schemaOutter.size(); j++) {
+							Vector tmpVector = (Vector) sailors.get(i);
+							System.out.println((int) tmpVector.get(j));
+							t.setIntFld(j + 1, (int) tmpVector.get(j));
+						}
+
+					} catch (Exception e) {
+						// System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
+						status = false;
+						e.printStackTrace();
+					}
+
+					try {
+						rid = f.insertRecord(t.returnTupleByteArray());
+					} catch (Exception e) {
+						System.err.println("*** error in Heapfile.insertRecord() ***");
+						status = false;
+						e.printStackTrace();
+					}
+				}
+				if (status != true) {
+					// bail out
+					System.err.println("*** Error creating relation for sailors");
+					Runtime.getRuntime().exit(1);
+				}
+
+>>>>>>> Stashed changes
 				AttrType Rtypes[] = new AttrType[schemaInner.size()];
 				FldSpec[] Rprojection = new FldSpec[schemaInner.size()];
 				for (int i = 0; i < schemaInner.size(); i++) {
@@ -476,11 +573,10 @@ public class ReadInput {
 				short[] Rsizes = new short[1];
 				Rsizes[0] = 0;
 
-				
-				Vector reserves = ri.loadList("/tmp/"+filesToRead[1]+".txt",schemaInner);
-				
-				
+				Vector reserves = ri.loadList("/tmp/" + filesToRead[1] + ".txt", schemaInner);
+
 				t = new Tuple();
+<<<<<<< Updated upstream
 			    try {
 			      t.setHdr((short) 4,Rtypes, null);
 			    }
@@ -588,6 +684,104 @@ public class ReadInput {
 			    Runtime.getRuntime().exit(1);
 			  }
 			AttrType[] JJtype = new AttrType[data.length];
+=======
+				try {
+					t.setHdr((short) 4, Rtypes, Rsizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				size = t.size();
+
+				// inserting the tuple into file "reserves"
+				// RID rid;
+				f = null;
+				try {
+					System.out.println(filesToRead[1]);
+					f = new Heapfile(filesToRead[1] + ".in");
+				} catch (Exception e) {
+					System.err.println("*** error in Heapfile constructor ***");
+					status = false;
+					e.printStackTrace();
+				}
+
+				t = new Tuple(size);
+				try {
+					t.setHdr((short) schemaInner.size(), Rtypes, Rsizes);
+				} catch (Exception e) {
+					System.err.println("*** error in Tuple.setHdr() ***");
+					status = false;
+					e.printStackTrace();
+				}
+				//////////
+
+				////////////
+
+				for (int i = 0; i < numreserves; i++) {
+					try {
+						for (int j = 0; j < schemaInner.size(); j++) {
+							Vector tmpVector = (Vector) reserves.get(i);
+							t.setIntFld(j + 1, (int) tmpVector.get(j));
+						}
+
+					} catch (Exception e) {
+						System.err.println("*** error in Tuple.setStrFld() ***");
+						status = false;
+						e.printStackTrace();
+					}
+
+					try {
+						rid = f.insertRecord(t.returnTupleByteArray());
+					} catch (Exception e) {
+						System.err.println("*** error in Heapfile.insertRecord() ***");
+						status = false;
+						e.printStackTrace();
+					}
+				}
+				if (status != true) {
+					// bail out
+					System.err.println("*** Error creating relation for reserves");
+					Runtime.getRuntime().exit(1);
+				}
+
+				iterator.Iterator am = null;
+				try {
+					am = new FileScan(filesToRead[1] + ".in", Rtypes, Rsizes, (short) schemaInner.size(), (short) schemaInner.size(),
+							Rprojection, null);
+				} catch (Exception e) {
+					status = false;
+					System.err.println("" + e);
+				}
+
+				if (status != true) {
+					// bail out
+					System.err.println("*** Error setting up scan for Reserves");
+					Runtime.getRuntime().exit(1);
+				}
+
+				NestedLoopsJoins nl1 = null;
+				try {
+					nl1 = new NestedLoopsJoins(Rtypes, schemaInner.size(), Rsizes, Stypes, schemaOutter.size(), Ssizes, 10, am,
+							filesToRead[0] + ".in", outFilter, null, proj_list, 2);
+				}
+
+				catch (Exception e) {
+
+					System.err.println("*** Error preparing for nested_loop_join");
+					System.err.println("" + e);
+					e.printStackTrace();
+					Runtime.getRuntime().exit(1);
+
+				}
+
+				if (status != true) {
+					System.err.println("error constructing nested loop !");
+					Runtime.getRuntime().exit(1);
+				}
+				AttrType[] JJtype = new AttrType[data.length];
+>>>>>>> Stashed changes
 				for (int i = 0; i < data.length; i++) {
 					JJtype[i]=new AttrType(AttrType.attrInteger);
 					/*
@@ -597,6 +791,7 @@ public class ReadInput {
 					} else {
 						JJtype[i] = new AttrType(schemaInner.get(Integer.parseInt(results[1]) - 1));
 					}
+<<<<<<< Updated upstream
 					*/
 				}			  
 			  t = null;
@@ -636,21 +831,50 @@ public class ReadInput {
 			    } 
 			    System.out.println("Done");
 			    
+=======
+				}
+				t = null;
+
+				try {
+					while ((t = nl1.get_next()) != null) {
+						t.print(JJtype);
+					}
+				} catch (Exception e) {
+					System.err.println("" + e);
+					e.printStackTrace();
+					Runtime.getRuntime().exit(1);
+
+				}
+
+				System.out.println("\n");
+				try {
+					nl1.close();
+				} catch (Exception e) {
+					status = false;
+					e.printStackTrace();
+				}
+
+				if (status != true) {
+					// bail out
+					System.err.println("*** Error setting up scan for reserves");
+					Runtime.getRuntime().exit(1);
+				}
+>>>>>>> Stashed changes
 			} else if (filesToRead.length == 1) {
 				System.out.println("Running query2a");
 				// query_2a();
 				// variable queryList is [Q_1 Q_1,Q, Q_3 1 Q_3]
 				// variable queryList is [R_1 R_1, R, R_3 2 S_3]
 				System.out.println(queryList.get(0));
-				int proj = Integer.parseInt(queryList.get(0).split(" ")[0].trim().split("_")[1].trim())+3; // get 1 from R_1 R_1
-				
+				int proj = Integer.parseInt(queryList.get(0).split(" ")[0].trim().split("_")[1].trim()) + 3; // get 1 from R_1 R_1
+
 				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
 				int t2cond1Col = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_3 2 S_4
 				int op1 = Integer.parseInt(queryList.get(2).split(" ")[1].trim()); // get 2 from R_3 2 S_4
 
 				// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
 				Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", t1cond1Col, t2cond1Col);
-				//new IESelfJoin1Predicate(T,op1,proj).printResults();
+				new IESelfJoin1Predicate(T, op1, proj).printResults();
 			}
 		} else if (queryList.size() == 5) {
 			if (filesToRead.length == 2) {
@@ -668,13 +892,18 @@ public class ReadInput {
 					// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
 					Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", --t1cond1Col, --t1cond2Col);
 					Tuple[] T1 = generateData(sourceDirPath + filesToRead[1] + ".txt", --t2cond1Col, --t2cond2Col);
-					// commented for testing
-					//new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
+
+					// new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
+					long start = System.currentTimeMillis();
+					int c = new IEJoin2Tables2Predicates(T, T1, op1, op2).run().size();
+					long end = System.currentTimeMillis();
+					System.out.format("Found %d tuples\nTime Taken: %d\n", c, end - start);
+
 				} else if (question1b == 1) {
 					System.out.println("Running query1b");
 					// query_1b();
 
-					//boolean status = true;
+					// boolean status = true;
 
 					CondExpr[] outFilter = new CondExpr[3];
 					outFilter[0] = new CondExpr();
@@ -701,7 +930,7 @@ public class ReadInput {
 				System.out.println("Running query2b");
 				// query_2b();
 				// variable queryList is [R_1 S_1, R S, R_3 2 S_4, AND, R_5 1 S_6]
-				//variable queryList is [Q_1 Q_1, Q, Q_3 4 Q_3, AND, Q_4 1 Q_4]
+				// variable queryList is [Q_1 Q_1, Q, Q_3 4 Q_3, AND, Q_4 1 Q_4]
 				int t1cond1Col = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 3 from R_3 2 S_4
 				int t2cond1Col = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_3 2 S_4
 				int t1cond2Col = Integer.parseInt(queryList.get(4).split(" ")[0].trim().split("_")[1].trim()); // get 5 from R_5 1 S_6
@@ -713,7 +942,7 @@ public class ReadInput {
 				Tuple[] T = generateData(sourceDirPath + filesToRead[0] + ".txt", t1cond1Col, t1cond2Col);
 				Tuple[] T1 = generateData(sourceDirPath + filesToRead[0] + ".txt", t2cond1Col, t2cond2Col);
 				// commented for testing
-				//new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
+				// new IEJoin2Tables2Predicates(T, T1, op1, op2).printResults();
 			}
 		} else {
 			// unknown predicate query

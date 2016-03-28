@@ -29,12 +29,13 @@ public class IESelfJoin1Predicate {
 	int n;
 	int op1;
 	static int p;
-	public IESelfJoin1Predicate(Tuple[] l1,int op1,int proj) {
-		this(l1,l1.length,op1,proj);
+
+	public IESelfJoin1Predicate(Tuple[] l1, int op1, int proj) {
+		this(l1, l1.length, op1, proj);
 	}
 
-	//l1 array of tuples, n size of table, op1 inequality operator
-	public IESelfJoin1Predicate(Tuple[] l1,int n, int op1,int proj) {
+	// l1 array of tuples, n size of table, op1 inequality operator
+	public IESelfJoin1Predicate(Tuple[] l1, int n, int op1, int proj) {
 		super();
 		L1 = l1;
 		this.n = n;
@@ -98,29 +99,28 @@ public class IESelfJoin1Predicate {
 		}
 		long endTime2 = System.nanoTime();
 
-
 		long startTime3 = System.nanoTime();
 		// Visit
-		if(op1 == 3 || op1 == 2){
+		if (op1 == 3 || op1 == 2) {
 			for (int i = 0; i < n; i++) {
-				for(int j = i; j < n; j++) {
-					join_result.add(new Tuple[] { L1[i], L1[j] });
+				for (int j = i; j < n; j++) {
+					// join_result.add(new Tuple[] { L1[i], L1[j] });
 				}
 			}
-		}
-		else if(op1 == 4 || op1 == 1){
+		} else if (op1 == 4 || op1 == 1) {
 			for (int i = 0; i < n; i++) {
-				for(int j = i+1; j < n; j++) {
-					if(L1[i].getIntFld(2)!=L1[j].getIntFld(2))
-						join_result.add(new Tuple[] { L1[i], L1[j] });
+				for (int j = i + 1; j < n; j++) {
+					if (L1[i].getIntFld(2) != L1[j].getIntFld(2))
+						;
+					// join_result.add(new Tuple[] { L1[i], L1[j] });
 				}
 			}
 		}
 		long endTime3 = System.nanoTime();
 		long endTime1 = System.nanoTime();
-		System.out.println("Time taken Total = "+(endTime1 - startTime1) + " ns"); 
-		System.out.println("Time taken preprocessing = "+(endTime2 - startTime2) + " ns"); 
-		System.out.println("Time taken Visiting = "+(endTime3 - startTime3) + " ns"); 
+		System.out.println("Time taken Total = " + (endTime1 - startTime1) + " ns");
+		System.out.println("Time taken preprocessing = " + (endTime2 - startTime2) + " ns");
+		System.out.println("Time taken Visiting = " + (endTime3 - startTime3) + " ns");
 
 		return join_result;
 
@@ -140,7 +140,8 @@ public class IESelfJoin1Predicate {
 		return String.format("[%d]", t.getIntFld(p));
 	}
 
-	public static void main(String[] args)  throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException{
+	public static void main(String[] args)
+			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		AttrType[] Stypes = new AttrType[4];
 		Stypes[0] = new AttrType(AttrType.attrInteger);
 		Stypes[1] = new AttrType(AttrType.attrInteger);
@@ -154,18 +155,19 @@ public class IESelfJoin1Predicate {
 		Tuple t4 = create(4, 1403557, 140355700, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-//		System.out.print ("\n-------------\n");
+		// System.out.print ("\n-------------\n");
 		long startTime = System.nanoTime();
 
-		IESelfJoin1Predicate iejoin = new IESelfJoin1Predicate(new Tuple[] {t1,t2,t3,t4},4,1,2);
+		IESelfJoin1Predicate iejoin = new IESelfJoin1Predicate(new Tuple[] { t1, t2, t3, t4 }, 4, 1, 2);
 
-//		long endTime = System.nanoTime();
-//		System.out.println("Time taken = "+(endTime - startTime) + " ns"); 
+		// long endTime = System.nanoTime();
+		// System.out.println("Time taken = "+(endTime - startTime) + " ns");
 		iejoin.printResults();
 
-		System.out.print ("\n------------\n");
+		System.out.print("\n------------\n");
 
 	}
+
 	public void printResults() throws FieldNumberOutOfBoundException, IOException {
 		ArrayList<Tuple[]> result = null;
 		try {
@@ -177,8 +179,8 @@ public class IESelfJoin1Predicate {
 		}
 		System.out.println("length = ");
 		System.out.println(result.size());
-		//for (Tuple[] myTuples : result) {
-			//System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
-		//}
+		// for (Tuple[] myTuples : result) {
+		// System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
+		// }
 	}
 }

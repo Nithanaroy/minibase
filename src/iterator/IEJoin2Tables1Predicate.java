@@ -23,6 +23,7 @@ public class IEJoin2Tables1Predicate {
 	Tuple[] t1;
 	Tuple[] t2;
 	int op1;
+	int totalTuples = 0;
 
 	public IEJoin2Tables1Predicate(Tuple[] l1, Tuple[] l2, int op1) {
 		super();
@@ -94,20 +95,23 @@ public class IEJoin2Tables1Predicate {
 
 		}
 
+		System.out.println("Total tuples: " + totalTuples);
 		return join_result;
 
 	}
 
 	private void addSucceedingTuples(ArrayList<Tuple[]> join_result, Tuple t, int i) {
 		while (i < t2.length) {
-			join_result.add(new Tuple[] { t, t2[i] });
+			// join_result.add(new Tuple[] { t, t2[i] });
+			totalTuples++;
 			i++;
 		}
 	}
 
 	private void addPrecedingTuples(ArrayList<Tuple[]> join_result, Tuple t, int i) {
 		while (i >= 0) {
-			join_result.add(new Tuple[] { t, t2[i] });
+			// join_result.add(new Tuple[] { t, t2[i] });
+			totalTuples++;
 			i--;
 		}
 	}
