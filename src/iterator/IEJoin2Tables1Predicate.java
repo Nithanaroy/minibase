@@ -35,6 +35,7 @@ public class IEJoin2Tables1Predicate {
 	// [1] => id, [2] => time/duration, [3] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
 		// TODO: Decide what to do when exception is raised
+		long start = System.currentTimeMillis();
 		ArrayList<Tuple[]> join_result = new ArrayList<>();
 		Comparator<Tuple> ascending = new Comparator<Tuple>() {
 			@Override
@@ -60,6 +61,8 @@ public class IEJoin2Tables1Predicate {
 		// sort tables by duration column
 		Arrays.sort(t1, ascending);
 		Arrays.sort(t2, ascending);
+
+		System.out.println("Pre-processing time: " + (System.currentTimeMillis() - start));
 
 		for (Tuple t : t1) {
 			int i = Arrays.binarySearch(t2, t, ascending);
@@ -147,9 +150,14 @@ public class IEJoin2Tables1Predicate {
 		System.out.println("Query: More time");
 		IEJoin2Tables1Predicate iejoin = new IEJoin2Tables1Predicate(new Tuple[] { t1, t2, t3 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 1);
 
+		iejoin.executeAndPrintResults();
+
+	}
+
+	public void executeAndPrintResults() throws FieldNumberOutOfBoundException, IOException {
 		ArrayList<Tuple[]> result = null;
 		try {
-			result = iejoin.run();
+			result = this.run();
 		} catch (FieldNumberOutOfBoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -158,7 +166,6 @@ public class IEJoin2Tables1Predicate {
 		for (Tuple[] myTuples : result) {
 			System.out.format("[%s, %s]\n", tupleToString(myTuples[0]), tupleToString(myTuples[1]));
 		}
-
 	}
 
 }
