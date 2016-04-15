@@ -168,21 +168,21 @@ public class readInput {
 		}
 	}
 
-	public static Integer mapOP(Integer oper1) {
+public static Integer mapOP(Integer oper1) {
 		if (oper1 == 0) {
 			return AttrOperator.aopEQ;
 		} else if (oper1 == 1) {
 			return AttrOperator.aopLT;
 		} else if (oper1 == 2) {
-			return AttrOperator.aopGT;
+			return AttrOperator.aopLE;
 		} else if (oper1 == 3) {
-			return AttrOperator.aopNE;
+			return AttrOperator.aopGE;
 		}
 
 		else if (oper1 == 4) {
-			return AttrOperator.aopLE;
+			return AttrOperator.aopGT;
 		} else if (oper1 == 5) {
-			return AttrOperator.aopGE;
+			return AttrOperator.aopNE;
 		} else if (oper1 == 6) {
 			return AttrOperator.aopNOT;
 		} else if (oper1 == 7) {
@@ -192,6 +192,7 @@ public class readInput {
 		}
 		return AttrOperator.aopEQ;
 	}
+
 
 	public static Tuple[] generateData(String fileName, Integer pos1, Integer pos2)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
@@ -250,7 +251,7 @@ public class readInput {
 		String remove_dbcmd = remove_cmd + dbpath;
 		String remove_joincmd = remove_cmd + dbpath;
 
-		SystemDefs sysdef = new SystemDefs(dbpath, 1000, 50, "Clock");
+		SystemDefs sysdef = new SystemDefs(dbpath, 1000000, 50, "Clock");
 
 		try {
 			Runtime.getRuntime().exec(remove_logcmd);
