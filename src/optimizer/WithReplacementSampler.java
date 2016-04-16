@@ -42,23 +42,16 @@ public class WithReplacementSampler extends ISampler {
 
 	public static void main(String[] args) {
 		// Testing the class
-		String inputFile = "/Volumes/350GB/Documents/workspace/minibase/data/phase4/F1r.csv";
+		String inputFile = "./data/phase4/F1r.csv";
 		int sampleSize = 10;
 		try {
 			ISampler mySampler = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, inputFile, sampleSize);
 			Tuple[] tuples = mySampler.getSample();
 
 			// Print the selected tuples
-			for (int i = 0; i < sampleSize; i++) {
-				System.out.format("%2d) ", i + 1);
-				for (int j = 1; j < mySampler.getStypes().length; j++) {
-					System.out.format("%8d,", tuples[i].getIntFld(j));
-				}
-				System.out.println();
-			}
+			printTable(tuples);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
 }

@@ -21,6 +21,7 @@ abstract class ISampler {
 	protected String relationFilePath = null;
 	protected int sampleSize = 0;
 	private AttrType[] Stypes;
+	private int id = 0; // unique ID assigned to each tuple. This is incremented as tuples are created
 
 	/**
 	 * Instantiate a sampler
@@ -36,7 +37,7 @@ abstract class ISampler {
 		try (BufferedReader br = new BufferedReader(new FileReader(relationFilePath))) {
 			String line = br.readLine();
 			int cols = line.split(",").length; // Assumption: input file is CSV
-			Stypes = new AttrType[cols + 1]; // Minibase reserves the first column for rid
+			Stypes = new AttrType[cols + 2]; // Minibase reserves the first column for rid and 2nd column for our own ID
 			for (int i = 0; i < Stypes.length; i++) {
 				Stypes[i] = new AttrType(AttrType.attrInteger); // Assumption: all are fields are integers
 			}
@@ -44,7 +45,8 @@ abstract class ISampler {
 
 	}
 
-	abstract Tuple[] getSample() throws IOException, NumberFormatException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException;
+	abstract Tuple[] getSample()
+			throws IOException, NumberFormatException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException;
 
 	public final AttrType[] getStypes() {
 		return Stypes;
@@ -63,9 +65,21 @@ abstract class ISampler {
 		String[] fields = input.split(",");
 		Tuple t = new Tuple();
 		t.setHdr((short) Stypes.length, Stypes, null);
-		for (int i = 1; i < Stypes.length; i++) {
-			t.setIntFld(i, Integer.parseInt(fields[i - 1]));
+		t.setIntFld(1, id++);
+		for (int i = 2; i < Stypes.length; i++) {
+			t.setIntFld(i, Integer.parseInt(fields[i - 2]));
 		}
 		return t;
+	}
+
+	public static void printTable(Tuple[] tuples) throws IOException, FieldNumberOutOfBoundException {
+		int noOfFields = tuples[0].noOfFlds();
+		for (int i = 0; i < tuples.length; i++) {
+			System.out.format("%2d) ", i + 1);
+			for (int j = 1; j < noOfFields; j++) {
+				System.out.format("%8d,", tuples[i].getIntFld(j));
+			}
+			System.out.println();
+		}
 	}
 }

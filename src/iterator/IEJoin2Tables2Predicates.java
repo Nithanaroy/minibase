@@ -202,6 +202,10 @@ public class IEJoin2Tables2Predicates {
 
 	}
 
+	public int runForCount() throws FieldNumberOutOfBoundException, IOException {
+		return this.run().size();
+	}
+
 	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
 		System.out.println("Using BitSet Naive");
 		for (int i = 0; i < m; i++) {
