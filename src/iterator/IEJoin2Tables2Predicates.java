@@ -194,8 +194,8 @@ public class IEJoin2Tables2Predicates {
 
 		System.out.format("Preprocessing time: %dms\n", (System.currentTimeMillis() - start));
 		// Visit
-		// usingBitsetNaive(join_result, eqOff);
-		usingBitsetOptimized(join_result, eqOff);
+		usingBitsetNaive(join_result, eqOff);
+		// usingBitsetOptimized(join_result, eqOff);
 		// usingBloomFilter(join_result, eqOff, 2);
 
 		return join_result;

@@ -168,7 +168,7 @@ public class readInput {
 		}
 	}
 
-public static Integer mapOP(Integer oper1) {
+	public static Integer mapOP(Integer oper1) {
 		if (oper1 == 0) {
 			return AttrOperator.aopEQ;
 		} else if (oper1 == 1) {
@@ -192,7 +192,6 @@ public static Integer mapOP(Integer oper1) {
 		}
 		return AttrOperator.aopEQ;
 	}
-
 
 	public static Tuple[] generateData(String fileName, Integer pos1, Integer pos2)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
@@ -262,7 +261,7 @@ public static Integer mapOP(Integer oper1) {
 		}
 
 		String line = null;
-		String queryFilePath = "/tmp/query_1a.txt";
+		String queryFilePath = "/tmp/query_1b.txt";
 		String sourceDirPath = "/tmp/";
 		Integer question1b = 1;
 
@@ -890,10 +889,10 @@ public static Integer mapOP(Integer oper1) {
 					try {
 						Integer count = 0;
 						while ((t = nl1.get_next()) != null) {
-							// t.print(JJtype);
+							t.print(JJtype);
 							count++;
 						}
-						// System.out.println(count);
+						System.out.format("%d tuples found in the result", count);
 					} catch (Exception e) {
 						System.err.println("error here" + e);
 						e.printStackTrace();

@@ -74,8 +74,8 @@ public class TwoTables1Or2PredicatesParser {
 	public static void main(String args[])
 			throws IOException, FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		String line = null;
-		String queryFilePath = "query_2c.txt";
-		String sourceDirPath = "/src/data";
+		String queryFilePath = "/Volumes/350GB/Documents/workspace/minibase/data/phase3/query_2c.txt";
+		String sourceDirPath = "/Volumes/350GB/Documents/workspace/minibase/data/phase3/";
 
 		if (args.length == 2) {
 			// Use command line args, else use the above default values
