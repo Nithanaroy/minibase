@@ -1,22 +1,17 @@
 package iterator;
 
-import global.AttrType;
-import global.GlobalConst;
-import global.RID;
-import global.SystemDefs;
-import heap.FieldNumberOutOfBoundException;
-import heap.Heapfile;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
-import heap.Tuple;
-import index.BloomFilter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
-import java.util.Vector;
+
+import global.AttrType;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
+import heap.Tuple;
+import index.BloomFilter;
 
 public class IEselfjoin2predicates {
 	Tuple[] L1;
@@ -25,24 +20,23 @@ public class IEselfjoin2predicates {
 	int op1;
 	int op2;
 
-	private int[] p;
-	private BitSet bp;
-	public IEselfjoin2predicates(Tuple[] l1, Tuple[] l2,int op1, int op2) {
+	private int[] p,bp;
+
+	public IEselfjoin2predicates(Tuple[] l1, Tuple[] l2, int n,int op1, int op2) {
 		super();
 		L1 = l1;
 		L2 = l2;
-		this.n = l1.length;
+		this.n = n;
 		this.op1 = op1;
 		this.op2 = op2;
 
 		p = new int[l1.length];
 		System.out.println("Lengath of p is "+p.length);
-		bp = new BitSet(l1.length);
+		bp = new int[l1.length];
 	}
 	// [1] => id, [2] => duration, [3] => cost, [4] and above => others
 	public ArrayList<Tuple[]> run() throws FieldNumberOutOfBoundException, IOException {
 		// TODO: Decide what to do when exception is raised
-		long startTime1 = System.nanoTime();
 		ArrayList<Tuple[]> join_result = new ArrayList<>();
 		Comparator<Tuple> ascDuration = new Comparator<Tuple>() {
 			@Override
@@ -127,25 +121,23 @@ public class IEselfjoin2predicates {
 		};
 
 		// Compute L1,L2
-		long startTime2 = System.nanoTime();
 		if (op1 == 2 || op1 == 1) {
 			Arrays.sort(L1, descDuration);
 		} else if (op1 == 3 || op1 == 4) {
 			Arrays.sort(L1, ascDuration);
 		}
-	
 
 		if (op2 == 1 || op2 == 2) {
 			Arrays.sort(L2, ascCost);
-		} else if (op2 == 3 || op2 == 4) {
+		} else if (op2 == 4 || op2 == 3) {
 			Arrays.sort(L2, descCost);
 		}
-		long endTime2 = System.nanoTime();
+
 		// Compute permutation arrays - P
 		int i = 0;
 		for (Tuple myTuple : L2) {
 			//System.out.println("My tuple is:"+Arrays.toString(myTuple.getTupleByteArray()));
-			p[i++] = findId(L1, myTuple.getIntFld(1)); // Tuple implements Comparable// MyTuple implements Comparable
+			p[i++] = findId(L1, myTuple.getIntFld(1)); // Tuple implements Comparable
 			//System.out.println("test");
 			//System.out.println(p[i-1]);
 		}	
@@ -158,75 +150,25 @@ public class IEselfjoin2predicates {
 			eqOff = 0;
 		else
 			eqOff = 1;
+
 		// Visit
- 		long startTime3 = System.nanoTime();
-		//usingBitsetNaive(join_result, eqOff);
-		usingBitsetOptimized(join_result, eqOff);
-		//usingBloomFilter(join_result, eqOff, 2);
-		long endTime3 = System.nanoTime();
-		long endTime1 = System.nanoTime();
-		System.out.println("Time taken Total = "+(endTime1 - startTime1) + " ns"); 
-		System.out.println("Time taken preprocessing = "+(endTime2 - startTime2) + " ns"); 
-		System.out.println("Time taken Visiting = "+(endTime3 - startTime3) + " ns"); 
-		return join_result;
-	}
-	private void usingBitsetNaive(ArrayList<Tuple[]> join_result, int eqOff) {
-		int count=0;
-		for (int i = 0; i < n; i++) {
-			int off2 = p[i];
-			bp.set(off2);
-			for (int k = off2 + eqOff; k < n; k++) { // TODO: check initialization
-				if (bp.get(k)) {
+		for (int j = 0; j < n; j++) {
+			int pos = p[j];
+			bp[pos]=1;
+			System.out.println(pos);
+			for (int k = pos + eqOff; k < n; k++) { // TODO: check initialization
+				if (bp[k] == 1) {
 					// add tuples w.r.t. (L2[i],L2p[k]) to join result
-					join_result.add(new Tuple[] { L1[k], L1[p[i]] });
-					count++;
-				
+					join_result.add(new Tuple[] { L1[k], L1[p[j]] });
 				}
 			}
+			//System.out.println(bp.length);
+			
 		}
-		System.out.println("Count "+count);
-	}
+		//System.out.println(join_result.toString());
+		return join_result;
 
-	private void usingBloomFilter(ArrayList<Tuple[]> join_result, int eqOff, int reduction_factor) {
-		BloomFilter b = new BloomFilter(L1.length, reduction_factor);
-		for (int i = 0; i < n; i++) {
-			int off2 = p[i];
-			bp.set(off2); // = 1;
-			b.setBit(off2);
-			int k = off2 + eqOff;
-			int c = b.nextSetChunk(k); // TODO: check initialization
-			while (c >= 0) {
-				// traverse the chunk
-				k = Math.max(k, c);
-				int limit = Math.min(c + reduction_factor + 1, L1.length);
-				while (k < limit) {
-					if (bp.get(k)) {
-						join_result.add(new Tuple[] { L1[k], L1[p[i]] });
-					}
-					k++;
-				}
-				c = b.nextSetChunk(k);
-			}
-		}
 	}
-
-	private void usingBitsetOptimized(ArrayList<Tuple[]> join_result, int eqOff) {
-		int count=0;
-		for (int i = 0; i < n; i++) {
-			int off2 = p[i];
-			bp.set(off2); // = 1;
-			int k = bp.nextSetBit(off2 + eqOff);
-			// TODO: check initialization
-			while (k >= 0) {
-				// add tuples w.r.t. (L1[i],L1[k]) to join result
-				join_result.add(new Tuple[] { L1[k], L1[p[i]] });
-				count++;
-				k = bp.nextSetBit(k + 1);
-			}
-		}
-			System.out.println("Count "+count);
-	}
-
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
 		int i = 0;
 		for (Tuple myTuple : a) {
@@ -268,16 +210,17 @@ public class IEselfjoin2predicates {
 		Tuple t1 = create(404, 100, 6, Stypes);
 		Tuple t2 = create(498, 140, 11, Stypes);
 		Tuple t3 = create(676, 80, 10, Stypes);
-		Tuple t4 = create(742, 90, 9, Stypes);
+		Tuple t4 = create(742, 90, 7, Stypes);
 
 		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEselfjoin2predicates ieselfjoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,1);
-		ieselfjoin.printResults();
-		}
-	public void printResults() throws FieldNumberOutOfBoundException, IOException {
+		IEselfjoin2predicates iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 }, new Tuple[] { t1, t2, t3,t4 },4,1,4);
+		// TODO: Incorrect answer for the below case
+		// iejoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3 }, new Tuple[] { t1, t2, t3 },
+		// new Tuple[] { tp1, tp2, tp3, tp4 }, new Tuple[] { tp1, tp2, tp3, tp4 }, 3, 4, 4, 1);
+
 		ArrayList<Tuple[]> result = null;
 		try {
-			result = this.run();
+			result = iejoin.run();
 		} catch (FieldNumberOutOfBoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
