@@ -30,11 +30,11 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 		Tuple[] r1 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, this.getRelation1(), r1SampleSize).getSample();
 		Tuple[] r2 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, this.getRelation2(), r2SampleSize).getSample();
 
-		System.out.println("Original R1");
-		ISampler.printTable(r1);
-
-		System.out.println("Original R2");
-		ISampler.printTable(r2);
+//		System.out.println("Original R1");
+//		ISampler.printTable(r1);
+//
+//		System.out.println("Original R2");
+//		ISampler.printTable(r2);
 
 		// IE Join expects columns participating in the this.getConditions() are 2nd and 3rd columns
 		// i.e. [0] column => Minibase reserved column
@@ -47,16 +47,16 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 		int condition2_col = Integer.parseInt(this.getConditions()[1][1]);
 		swapColumnsToMatch(r1, condition1_col, condition2_col);
 
-		System.out.println("After Swap, R1");
-		ISampler.printTable(r1);
+//		System.out.println("After Swap, R1");
+//		ISampler.printTable(r1);
 
 		// For R2
 		condition1_col = Integer.parseInt(this.getConditions()[0][4]);
 		condition2_col = Integer.parseInt(this.getConditions()[1][4]);
 		swapColumnsToMatch(r2, condition1_col, condition2_col);
 
-		System.out.println("After Swap, R2");
-		ISampler.printTable(r2);
+		// System.out.println("After Swap, R2");
+		// ISampler.printTable(r2);
 
 		int condtionOp1 = Integer.parseInt(this.getConditions()[0][2]);
 		int condtionOp2 = Integer.parseInt(this.getConditions()[1][2]);
