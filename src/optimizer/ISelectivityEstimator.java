@@ -10,17 +10,15 @@ import heap.Tuple;
 
 public abstract class ISelectivityEstimator {
 
-	private String relation1, relation2;
+	private String relationsDir;
 	private String[][] conditions;
 
 	/**
-	 * @param relation1 file path of the first relation 
-	 * @param relation2 file path of the second relation 
+	 * @param relationsDir complete path to the directory where the relations can be found 
 	 * @param conditions an array of conditions for IE Join [ [R,3,4,S,3], [R,4,3,S,4] ]
 	 */
-	public ISelectivityEstimator(String relation1, String relation2, String[][] conditions) {
-		this.relation1 = relation1;
-		this.relation2 = relation2;
+	public ISelectivityEstimator(String relationsDir, String[][] conditions) {
+		this.relationsDir = relationsDir;
 		this.conditions = conditions;
 	}
 
@@ -52,12 +50,8 @@ public abstract class ISelectivityEstimator {
 		}
 	}
 
-	protected String getRelation1() {
-		return relation1;
-	}
-
-	protected String getRelation2() {
-		return relation2;
+	protected String getRelationsDir() {
+		return relationsDir;
 	}
 
 	protected String[][] getConditions() {

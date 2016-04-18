@@ -1,13 +1,13 @@
 package optimizer;
 
 public class SelectivityEstimatorFactory {
-	public static ISelectivityEstimator getEstimator(Estimator e, String relation1, String relation2, String[][] conditions) {
+	public static ISelectivityEstimator getEstimator(Estimator e, String relationsDir, String[][] conditions) {
 		switch (e) {
 		case BY_RANDOM_SAMPLING:
-			return new SelectivityEstimationByRandomSampling(relation1, relation2, conditions);
+			return new SelectivityEstimationByRandomSampling(relationsDir, conditions);
 
 		default:
-			return new SelectivityEstimationByRandomSampling(relation1, relation2, conditions);
+			return new SelectivityEstimationByRandomSampling(relationsDir, conditions);
 		}
 	}
 }

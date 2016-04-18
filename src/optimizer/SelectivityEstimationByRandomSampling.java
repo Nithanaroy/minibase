@@ -11,8 +11,8 @@ import iterator.IEJoin2Tables2Predicates;
 
 public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator {
 
-	public SelectivityEstimationByRandomSampling(String relation1, String relation2, String[][] conditions) {
-		super(relation1, relation2, conditions);
+	public SelectivityEstimationByRandomSampling(String relationsDir, String[][] conditions) {
+		super(relationsDir, conditions);
 	}
 
 	/**
@@ -27,14 +27,18 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 	public int estimate(int r1SampleSize, int r2SampleSize) throws FileNotFoundException, IOException, NumberFormatException,
 			InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException {
 
-		Tuple[] r1 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, this.getRelation1(), r1SampleSize).getSample();
-		Tuple[] r2 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, this.getRelation2(), r2SampleSize).getSample();
+		// Get relation names from the conditions. As IE join works on two relations we can look at one of the conditions.
+		// Each condition is of the form - [R,3,4,S,3]
+		String relation1Path = this.getRelationsDir() + "//" + this.getConditions()[0][0] + ".csv"; // Assumption: Each relation file is a .csv file
+		String relation2Path = this.getRelationsDir() + "//" + this.getConditions()[0][3] + ".csv";
+		Tuple[] r1 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, relation1Path, r1SampleSize).getSample();
+		Tuple[] r2 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, relation2Path, r2SampleSize).getSample();
 
-		System.out.println("Original R1");
-		ISampler.printTable(r1);
-
-		System.out.println("Original R2");
-		ISampler.printTable(r2);
+		// System.out.println("Original R1");
+		// ISampler.printTable(r1);
+		//
+		// System.out.println("Original R2");
+		// ISampler.printTable(r2);
 
 		// IE Join expects columns participating in the this.getConditions() are 2nd and 3rd columns
 		// i.e. [0] column => Minibase reserved column
@@ -47,16 +51,16 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 		int condition2_col = Integer.parseInt(this.getConditions()[1][1]);
 		swapColumnsToMatch(r1, condition1_col, condition2_col);
 
-		System.out.println("After Swap, R1");
-		ISampler.printTable(r1);
+		// System.out.println("After Swap, R1");
+		// ISampler.printTable(r1);
 
 		// For R2
 		condition1_col = Integer.parseInt(this.getConditions()[0][4]);
 		condition2_col = Integer.parseInt(this.getConditions()[1][4]);
 		swapColumnsToMatch(r2, condition1_col, condition2_col);
 
-		System.out.println("After Swap, R2");
-		ISampler.printTable(r2);
+		// System.out.println("After Swap, R2");
+		// ISampler.printTable(r2);
 
 		int condtionOp1 = Integer.parseInt(this.getConditions()[0][2]);
 		int condtionOp2 = Integer.parseInt(this.getConditions()[1][2]);
