@@ -42,6 +42,7 @@ public class Scheduler {
 		return n * factorial(n - 1);
 	}
 
+	@SuppressWarnings("unused")
 	private int ncr(int n, int r) {
 		return factorial(n) / (factorial(n - r) * factorial(r));
 	}

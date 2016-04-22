@@ -7,7 +7,7 @@ import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Tuple;
-import iterator.IEJoin2Tables2Predicates;
+import iterator.IEjoin2t2predicates;
 
 public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator {
 
@@ -47,24 +47,25 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 		// i.e. [3] column => condition 2 column
 
 		// For R1
-		int condition1_col = Integer.parseInt(this.getConditions()[0][1]);
-		int condition2_col = Integer.parseInt(this.getConditions()[1][1]);
-		swapColumnsToMatch(r1, condition1_col, condition2_col);
+		int t1_cond1 = Integer.parseInt(this.getConditions()[0][1]);
+		int t1_cond2 = Integer.parseInt(this.getConditions()[1][1]);
+		// swapColumnsToMatch(r1, condition1_col, condition2_col);
 
 		// System.out.println("After Swap, R1");
 		// ISampler.printTable(r1);
 
 		// For R2
-		condition1_col = Integer.parseInt(this.getConditions()[0][4]);
-		condition2_col = Integer.parseInt(this.getConditions()[1][4]);
-		swapColumnsToMatch(r2, condition1_col, condition2_col);
+		int t2_cond1 = Integer.parseInt(this.getConditions()[0][4]);
+		int t2_cond2 = Integer.parseInt(this.getConditions()[1][4]);
+		// swapColumnsToMatch(r2, condition1_col, condition2_col);
 
 		// System.out.println("After Swap, R2");
 		// ISampler.printTable(r2);
 
 		int condtionOp1 = Integer.parseInt(this.getConditions()[0][2]);
 		int condtionOp2 = Integer.parseInt(this.getConditions()[1][2]);
-		return new IEJoin2Tables2Predicates(r1, r2, condtionOp1, condtionOp2, null, null).runForCount();
+		// return new IEJoin2Tables2Predicates(r1, r2, condtionOp1, condtionOp2, null, null).runForCount();
+		return new IEjoin2t2predicates(r1, r2, condtionOp1, condtionOp2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).runForCount();
 	}
 
 }

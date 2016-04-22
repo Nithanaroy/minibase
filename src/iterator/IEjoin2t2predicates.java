@@ -1,12 +1,5 @@
 package iterator;
 
-import global.AttrType;
-import heap.FieldNumberOutOfBoundException;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
-import heap.Tuple;
-import index.BloomFilter;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -16,6 +9,12 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
+
+import global.AttrType;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
+import heap.Tuple;
 
 public class IEjoin2t2predicates {
 	Tuple[] L1;
@@ -28,11 +27,11 @@ public class IEjoin2t2predicates {
 	int T1_size;
 	int T2_size;
 
-	public static int t1_c1;
-	public static int t2_c1;
-	public static int t1_c2;
-	public static int t2_c2;
-	public static int ind = 0;
+	public int t1_c1;
+	public int t2_c1;
+	public int t1_c2;
+	public int t2_c2;
+	public int ind = 0;
 
 	private int[] p;
 	private BitSet bp;
@@ -61,30 +60,30 @@ public class IEjoin2t2predicates {
 		n = l1_len + l2_len;
 
 		// Orginal Table
-		System.out.println("Table 1");
-		for (int k = 0; k < l1.length; k++) {
-			System.out.format("[%s]\n", tupleToString(l1[k]));
-		}
-
-		System.out.println("Table 2");
-		for (int k = 0; k < l2.length; k++) {
-			System.out.format("[%s]\n", tupleToString(l2[k]));
-		}
+		// System.out.println("Table 1");
+		// for (int k = 0; k < l1.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(l1[k]));
+		// }
+		//
+		// System.out.println("Table 2");
+		// for (int k = 0; k < l2.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(l2[k]));
+		// }
 
 		// swap
 		swap(l1, t1_c1, t1_c2, 0);
 		swap(l2, t2_c1, t2_c2, 1);
 
 		// Swapped Table
-		System.out.println("swapped Table 1");
-		for (int k = 0; k < l1.length; k++) {
-			System.out.format("[%s]\n", tupleToString(l1[k]));
-		}
-
-		System.out.println("swapped Table 2");
-		for (int k = 0; k < l2.length; k++) {
-			System.out.format("[%s]\n", tupleToString(l2[k]));
-		}
+		// System.out.println("swapped Table 1");
+		// for (int k = 0; k < l1.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(l1[k]));
+		// }
+		//
+		// System.out.println("swapped Table 2");
+		// for (int k = 0; k < l2.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(l2[k]));
+		// }
 
 		L1 = new Tuple[l1_len + l2_len];
 		System.arraycopy(l1, 0, L1, 0, l1_len);
@@ -104,10 +103,10 @@ public class IEjoin2t2predicates {
 		bp = new BitSet(L1.length);
 
 		// Combined Table
-		System.out.println("Combined Table");
-		for (int k = 0; k < L1.length; k++) {
-			System.out.format("[%s]\n", tupleToString(L1[k]));
-		}
+		// System.out.println("Combined Table");
+		// for (int k = 0; k < L1.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(L1[k]));
+		// }
 
 	}
 
@@ -173,9 +172,15 @@ public class IEjoin2t2predicates {
 	}
 
 	public Tuple[] run() throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		// TODO: Decide what to do when exception is raised
-
 		List<Tuple> join_result = new ArrayList<>();
+		int eqOff = preprocess();
+		// Visit
+		usingBitsetOptimized(join_result, eqOff);
+
+		return join_result.toArray(new Tuple[join_result.size()]);
+	}
+
+	private int preprocess() throws FieldNumberOutOfBoundException, IOException {
 		Comparator<Tuple> asc_col_1 = new Comparator<Tuple>() {
 			@Override
 			public int compare(Tuple o1, Tuple o2) {
@@ -259,13 +264,13 @@ public class IEjoin2t2predicates {
 			Arrays.sort(L2, desc_col_2);
 		}
 
-		System.out.println("\nL1 = ");
-		for (int k = 0; k < L1.length; k++) {
-			System.out.format("[%s]\n", tupleToString(L1[k]));
-		}
-		System.out.println("\nL2 = ");
-		for (int k = 0; k < L2.length; k++)
-			System.out.format("[%s]\n", tupleToString(L2[k]));
+		// System.out.println("\nL1 = ");
+		// for (int k = 0; k < L1.length; k++) {
+		// System.out.format("[%s]\n", tupleToString(L1[k]));
+		// }
+		// System.out.println("\nL2 = ");
+		// for (int k = 0; k < L2.length; k++)
+		// System.out.format("[%s]\n", tupleToString(L2[k]));
 
 		// Compute permutation arrays - P
 		int i = 0;
@@ -274,9 +279,9 @@ public class IEjoin2t2predicates {
 			p[i++] = findId(L1, myTuple.getIntFld(2));
 		}
 
-		System.out.println("\nP = ");
-		for (int k = 0; k < p.length; k++)
-			System.out.print(p[k] + " ");
+		// System.out.println("\nP = ");
+		// for (int k = 0; k < p.length; k++)
+		// System.out.print(p[k] + " ");
 
 		// intialize the bit array, set all to zero
 		int eqOff = 0;
@@ -284,10 +289,12 @@ public class IEjoin2t2predicates {
 			eqOff = 0;
 		else
 			eqOff = 1;
-		// Visit
-		usingBitsetOptimized(join_result, eqOff);
+		return eqOff;
+	}
 
-		return join_result.toArray(new Tuple[join_result.size()]);
+	public int runForCount() throws FieldNumberOutOfBoundException, IOException {
+		int eqOff = preprocess();
+		return usingBitsetOptimizedCount(eqOff);
 	}
 
 	private void usingBitsetOptimized(List<Tuple> join_result, int eqOff)
@@ -316,7 +323,6 @@ public class IEjoin2t2predicates {
 			int off2 = p[i];
 			bp.set(off2); // = 1;
 			int k = bp.nextSetBit(off2 + eqOff);
-			// TODO: check initialization
 			while (k >= 0) {
 				Tuple temp = new Tuple();
 				int size = T1_size + T2_size - 4;
@@ -359,6 +365,22 @@ public class IEjoin2t2predicates {
 			}
 		}
 		System.out.println("Count " + count);
+	}
+
+	private int usingBitsetOptimizedCount(int eqOff) throws FieldNumberOutOfBoundException, IOException {
+		int count = 0;
+		for (int i = 0; i < L1.length; i++) {
+			int off2 = p[i];
+			bp.set(off2);
+			int k = bp.nextSetBit(off2 + eqOff);
+			while (k >= 0) {
+				if (L1[k].getIntFld(1) == 0 && L1[p[i]].getIntFld(1) == 1) {
+					count++;
+				}
+				k = bp.nextSetBit(k + 1);
+			}
+		}
+		return count;
 	}
 
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
@@ -543,8 +565,8 @@ public class IEjoin2t2predicates {
 		// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
 		Tuple[] T1 = generateData(sourceDirPath + filesToRead[0] + ".txt");
 		Tuple[] T2 = generateData(sourceDirPath + filesToRead[1] + ".txt");
-		int len1 = T1.length, len2 = T2.length;
-//		System.out.println("file 1 = " + filesToRead[0] + " file 2 = " + filesToRead[1]);
+		// int len1 = T1.length, len2 = T2.length;
+		// System.out.println("file 1 = " + filesToRead[0] + " file 2 = " + filesToRead[1]);
 
 		new IEjoin2t2predicates(T1, T2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).printResults();
 	}
