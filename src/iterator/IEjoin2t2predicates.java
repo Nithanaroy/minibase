@@ -1,5 +1,11 @@
 package iterator;
 
+import global.AttrType;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
+import heap.Tuple;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,12 +15,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
-
-import global.AttrType;
-import heap.FieldNumberOutOfBoundException;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
-import heap.Tuple;
 
 public class IEjoin2t2predicates {
 	Tuple[] L1;
@@ -27,16 +27,16 @@ public class IEjoin2t2predicates {
 	int T1_size;
 	int T2_size;
 
-	public int t1_c1;
-	public int t2_c1;
-	public int t1_c2;
-	public int t2_c2;
-	public int ind = 0;
+	int t1_c1;
+	int t2_c1;
+	int t1_c2;
+	int t2_c2;
+	int ind = 0;
 
 	private int[] p;
 	private BitSet bp;
 
-	public IEjoin2t2predicates(Tuple[] l1, Tuple[] l2, int op1, int op2, int t1_c1, int t2_c1, int t1_c2, int t2_c2)
+	public IEjoin2t2predicates(Tuple[] l1, Tuple[] l2, int op1, int op2, int t1c1, int t2c1, int t1c2, int t2c2)
 			throws FieldNumberOutOfBoundException, IOException {
 		super();
 		L1 = l1;
@@ -45,46 +45,52 @@ public class IEjoin2t2predicates {
 		this.op1 = op1;
 		this.op2 = op2;
 
-		this.t1_c1 = t1_c1;
-		this.t2_c1 = t2_c1;
-		this.t1_c2 = t1_c2;
-		this.t2_c2 = t2_c2;
+		t1_c1 = t1c1;
+		t2_c1 = t2c1;
+		t1_c2 = t1c2;
+		t2_c2 = t2c2;
 
 		l1_len = l1.length;
 		l2_len = l2.length;
 
 		T1_size = l1[0].noOfFlds();
 		T2_size = l2[0].noOfFlds();
-		// System.out.println("T1_size = " + T1_size);
-		// System.out.println("T2_size = " + T2_size);
+
+		// System.out.println("T1_size = "+T1_size);
+		// System.out.println("T2_size = "+T2_size);
+
 		n = l1_len + l2_len;
 
 		// Orginal Table
-		// System.out.println("Table 1");
-		// for (int k = 0; k < l1.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(l1[k]));
-		// }
-		//
-		// System.out.println("Table 2");
-		// for (int k = 0; k < l2.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(l2[k]));
-		// }
-
+		/*System.out.println("Table 1");
+		for(int k=0;k<l1.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(l1[k]));
+		}
+		
+		System.out.println("Table 2");
+		for(int k=0;k<l2.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(l2[k]));
+		}
+		 */
 		// swap
 		swap(l1, t1_c1, t1_c2, 0);
 		swap(l2, t2_c1, t2_c2, 1);
 
 		// Swapped Table
-		// System.out.println("swapped Table 1");
-		// for (int k = 0; k < l1.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(l1[k]));
-		// }
-		//
-		// System.out.println("swapped Table 2");
-		// for (int k = 0; k < l2.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(l2[k]));
-		// }
-
+		/*System.out.println("swapped Table 1");
+		for(int k=0;k<l1.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(l1[k]));
+		}
+		
+		System.out.println("swapped Table 2");
+		for(int k=0;k<l2.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(l2[k]));
+		}
+		 */
 		L1 = new Tuple[l1_len + l2_len];
 		System.arraycopy(l1, 0, L1, 0, l1_len);
 		System.arraycopy(l2, 0, L1, l1_len, l2_len);
@@ -96,26 +102,26 @@ public class IEjoin2t2predicates {
 		for (int i = 0; i < L2.length; i++) {
 			ind++;
 			L1[i].setIntFld(2, ind);
-			L1[i].setIntFld(2, ind);
+			L2[i].setIntFld(2, ind);
 		}
 
 		p = new int[L1.length];
 		bp = new BitSet(L1.length);
 
 		// Combined Table
-		// System.out.println("Combined Table");
-		// for (int k = 0; k < L1.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(L1[k]));
-		// }
-
+		/*System.out.println("Combined Table");
+		for(int k=0;k<L1.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(L1[k]));
+		}*/
 	}
 
-	public void unswap(Tuple A) throws FieldNumberOutOfBoundException, IOException {
+	private void unswap(Tuple A) throws FieldNumberOutOfBoundException, IOException {
 		int c1, c2;
 		int size = A.noOfFlds();
 		size = size - 2;
 		int[] temp = new int[size];
-		// System.out.println( A.getIntFld(1)+","+A.getIntFld(2)+","+ A.getIntFld(3));
+
 		if (A.getIntFld(1) == 0) {
 			c1 = t1_c1;
 			c2 = t1_c2;
@@ -138,7 +144,7 @@ public class IEjoin2t2predicates {
 		}
 	}
 
-	public void swap(Tuple[] A, int c1, int c2, int b) throws FieldNumberOutOfBoundException, IOException {
+	private void swap(Tuple[] A, int c1, int c2, int b) throws FieldNumberOutOfBoundException, IOException {
 
 		int size = 0;
 
@@ -171,8 +177,8 @@ public class IEjoin2t2predicates {
 		}
 	}
 
-	public Tuple[] run() throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		ArrayList<Tuple> join_result = new ArrayList<>();
+	private void sorting() throws FieldNumberOutOfBoundException, IOException {
+
 		Comparator<Tuple> asc_col_1 = new Comparator<Tuple>() {
 			@Override
 			public int compare(Tuple o1, Tuple o2) {
@@ -341,25 +347,41 @@ public class IEjoin2t2predicates {
 			Arrays.sort(L2, desc_col_2);
 		}
 
-		// System.out.println("\nL1 = ");
-		// for (int k = 0; k < L1.length; k++) {
-		// System.out.format("[%s]\n", tupleToString(L1[k]));
-		// }
-		// System.out.println("\nL2 = ");
-		// for (int k = 0; k < L2.length; k++)
-		// System.out.format("[%s]\n", tupleToString(L2[k]));
-
+		/*System.out.println("\nL1 = ");
+		for(int k=0;k<L1.length;k++)
+		{
+			System.out.format("[%s]\n", tupleToString(L1[k]));
+		}
+		System.out.println("\nL2 = ");
+		for(int k=0;k<L2.length;k++)
+			System.out.format("[%s]\n", tupleToString(L2[k]));
+		 */
 		// Compute permutation arrays - P
 		int i = 0;
 		for (Tuple myTuple : L2) {
-			// System.out.println("myTuple.getIntFld(2) = "+myTuple.getIntFld(2));
 			p[i++] = findId(L1, myTuple.getIntFld(2));
 		}
 
-		// System.out.println("\nP = ");
-		// for (int k = 0; k < p.length; k++)
-		// System.out.print(p[k] + " ");
+		/*System.out.println("\nP = ");
+		for(int k=0;k<p.length;k++)
+			System.out.print(p[k]+" ");
+		*/
+	}
 
+	public int runForCount() throws FieldNumberOutOfBoundException, IOException {
+		sorting();
+		int eqOff = 0;
+		if ((op1 == 2 || op1 == 3) && (op2 == 2 || op2 == 3))
+			eqOff = 0;
+		else
+			eqOff = 1;
+
+		return usingBitsetOptimized(eqOff);
+	}
+
+	public Tuple[] run() throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
+		ArrayList<Tuple> join_result = new ArrayList<>();
+		sorting();
 		// intialize the bit array, set all to zero
 		int eqOff = 0;
 		if ((op1 == 2 || op1 == 3) && (op2 == 2 || op2 == 3))
@@ -367,23 +389,32 @@ public class IEjoin2t2predicates {
 		else
 			eqOff = 1;
 		// Visit
-
 		usingBitsetOptimized(join_result, eqOff);
-
 		Tuple[] res = new Tuple[join_result.size()];
 		join_result.toArray(res);
 		return res;
 	}
 
-	public int runForCount() throws FieldNumberOutOfBoundException, InvalidTypeException, InvalidTupleSizeException, IOException {
-		// TODO: Refactor class to optimize this function
-		return this.run().length;
+	private int usingBitsetOptimized(int eqOff) throws FieldNumberOutOfBoundException, IOException {
+		int count = 0;
+		for (int i = 0; i < L1.length; i++) {
+			int off2 = p[i];
+			bp.set(off2); // = 1;
+			int k = bp.nextSetBit(off2 + eqOff);
+			while (k >= 0) {
+				if (L1[k].getIntFld(1) == 0 && L1[p[i]].getIntFld(1) == 1) {
+					count++;
+				}
+				k = bp.nextSetBit(k + 1);
+
+			}
+		}
+		// System.out.println("Count "+count);
+		return count;
 	}
 
 	private void usingBitsetOptimized(ArrayList<Tuple> join_result, int eqOff)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		int count = 0;
-
 		Tuple temp1 = new Tuple();
 		int size1 = T1_size;
 		AttrType[] Stypes1 = new AttrType[size1];
@@ -434,14 +465,15 @@ public class IEjoin2t2predicates {
 						temp.setIntFld(m, temp2.getIntFld(t));
 					}
 
+					// join_result.add(new Tuple[] { L1[k], L1[p[i]] });
 					join_result.add(temp);
-					count++;
 				}
+
 				k = bp.nextSetBit(k + 1);
 
 			}
 		}
-		// System.out.println("Join Result: " + count);
+		// System.out.println("Count "+count);
 	}
 
 	private int findId(Tuple[] a, int id) throws FieldNumberOutOfBoundException, IOException {
@@ -454,100 +486,78 @@ public class IEjoin2t2predicates {
 		return -1;
 	}
 
-	public static Tuple create(int id, int duration, int cost, int b, AttrType[] Stypes)
-			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		Tuple t = new Tuple();
-		t.setHdr((short) 5, Stypes, null);
-		t.setIntFld(1, id);
-		t.setIntFld(2, duration);
-		t.setIntFld(3, cost);
-		t.setIntFld(4, b);
-		System.out.println(tupleToString(t));
-		return t;
-	}
-
-	public static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
+	@SuppressWarnings("unused")
+	private static String tupleToString(Tuple t) throws FieldNumberOutOfBoundException, IOException {
 		return String.format("[%d, %d, %d, %d, %d, %d]", t.getIntFld(1), t.getIntFld(2), t.getIntFld(3), t.getIntFld(4), t.getIntFld(5),
 				t.getIntFld(6));
 	}
 
-	public static String tupleToStr(Tuple t, int size) throws FieldNumberOutOfBoundException, IOException {
+	private static String tupleToStr(Tuple t, int size) throws FieldNumberOutOfBoundException, IOException {
 		String str = "";
 		for (int i = 1; i <= size; i++)
 			str = str + t.getIntFld(i) + "	";
 		return String.format(str);
 	}
 
-	public static Tuple[] generateData(String fileName)
+	private static void setTuple(Tuple t, AttrType s, String value, Integer pos)
+			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
+		Integer attType = s.attrType;
+		switch (attType) {
+		case AttrType.attrInteger:
+			t.setIntFld(pos, Integer.parseInt(value));
+			break;
+		case AttrType.attrString:
+			t.setStrFld(pos, value);
+			break;
+		case AttrType.attrSymbol:
+			t.setFloFld(pos, Float.parseFloat(value));
+			break;
+		}
+	}
+
+	private static Tuple[] generateData(String fileName)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		String line = null;
 		AttrType[] Stypes;
 		List<Tuple> queryList = new ArrayList<Tuple>();
-		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-			line = bufferedReader.readLine().trim();
-			int columnsCount = line.split(",").length + 2; // First two columns are for office use ;)
-			int id = 1;
+		try {
+			FileReader fileReader = new FileReader(fileName);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
 
+			line = bufferedReader.readLine();
+			int columnsCount = line.trim().split(",").length + 2; // First four columns are for office use ;)
+			// System.out.println("columnsCount = "+columnsCount);
 			Stypes = new AttrType[columnsCount];
-			for (int i = 0; i < columnsCount; i++)
+			for (int i = 0; i < columnsCount; i++) {
 				Stypes[i] = new AttrType(AttrType.attrInteger); // Assumption: All columns are of integer type
-
+			}
 			do {
-				String[] tupleData = line.trim().split(",");
+				String[] tupleData = line.split(",");
+				// System.out.print("data = "+tupleData[0]);
 				Tuple t = new Tuple();
 				t.setHdr((short) columnsCount, Stypes, null);
 
-				t.setIntFld(1, id++); // primary key column
-				for (int i = 0; i < tupleData.length; i++) {
-					t.setIntFld(i + 2, Integer.parseInt(tupleData[i].trim())); // First two columns are reserved
+				for (int i = 1; i <= tupleData.length; i++) {
+					setTuple(t, Stypes[i], tupleData[i - 1], i);
 				}
 				queryList.add(t);
 			} while ((line = bufferedReader.readLine()) != null);
-
+			// Always close files.
+			bufferedReader.close();
 		} catch (FileNotFoundException ex) {
 			System.out.println("Unable to open file '" + fileName + "'");
 		} catch (IOException ex) {
 			System.out.println("Error reading file '" + fileName + "'");
+			// Or we could just do this:
+			// ex.printStackTrace();
 		}
 		Tuple[] tupleArray = new Tuple[queryList.size()];
 		return queryList.toArray(tupleArray);
 	}
 
-	public static int getProjInfo(String[] filesToRead, String filename) {
-		if (filesToRead.length == 1) {
-			return 1;
-		}
-		if (filesToRead[0].equals(filename)) {
-			return 1;
-		}
-		return 0;
-	}
-
 	public static void main(String[] args)
 			throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
-		/*
-		// Setting the types
-		AttrType[] Stypes = new AttrType[5];
-		Stypes[0] = new AttrType(AttrType.attrInteger);
-		Stypes[1] = new AttrType(AttrType.attrInteger);
-		Stypes[2] = new AttrType(AttrType.attrInteger);
-		Stypes[3] = new AttrType(AttrType.attrInteger);
-		Stypes[4] = new AttrType(AttrType.attrInteger);
-		
-		// Table T
-		Tuple t1 = create(100, 140, 9, 0, Stypes);
-		Tuple t2 = create(101, 100, 12, 0, Stypes);
-		Tuple t3 = create(102, 70, 5, 0, Stypes);
-		Tuple t4 = create(103, 160, 6,1, Stypes);
-		Tuple t5 = create(104, 150, 11, 1, Stypes);
-		Tuple t6 = create(105, 80, 10, 1, Stypes);
-		Tuple t7 = create(106, 90, 7, 1, Stypes);
-		
-		
-		// Operators Map: 1 for <, 2 for <=, 3 for >= and 4 for >
-		IEselfjoin2predicates ieselfjoin = new IEselfjoin2predicates(new Tuple[] { t1, t2, t3,t4 ,t5,t6,t7}, new Tuple[] { t1, t2, t3,t4,t5,t6,t7 },1,2);
-		ieselfjoin.printResults();
-		 */
+
 		String queryFilePath = "./data/query_2c.txt";
 		String sourceDirPath = "./data/";
 
@@ -561,68 +571,47 @@ public class IEjoin2t2predicates {
 			}
 			// Always close files.
 			bufferedReader.close();
+
+			/*System.out.println("Given Query: ");
+			int listSize = queryList.size();
+			for (int i = 0; i < listSize; ++i)
+				System.out.println(queryList.get(i));
+			System.out.println();
+			 */
+			String[] filesToRead = queryList.get(1).split(" ");
+
+			// System.out.println("Running query2c");
+			// variable queryList is [R_1 S_1, R S, R_2 1 S_2, AND, R_4 1 S_4]
+			int t1_cond1 = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 2 from R_2 1 S_2
+			int t2_cond1 = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 2 from R_2 1 S_2
+			int t1_cond2 = Integer.parseInt(queryList.get(4).split(" ")[0].trim().split("_")[1].trim()); // get 4 from R_4 1 S_4
+			int t2_cond2 = Integer.parseInt(queryList.get(4).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_4 1 S_4
+			int op1 = Integer.parseInt(queryList.get(2).split(" ")[1].trim()); // get 2 from R_2 1 S_2
+			int op2 = Integer.parseInt(queryList.get(4).split(" ")[1].trim()); // get 1 from R_4 1 S_4
+
+			// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
+			Tuple[] T1 = generateData(sourceDirPath + filesToRead[0] + ".csv");
+			Tuple[] T2 = generateData(sourceDirPath + filesToRead[1] + ".csv");
+			// System.out.println("file 1 = "+filesToRead[0]+" file 2 = "+filesToRead[1]);
+
+			// new IEjoin2t2predicates(T1, T2, op1, op2,t1_cond1,t2_cond1,t1_cond2,t2_cond2).runforcount();
+			new IEjoin2t2predicates(T1, T2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).printResults();
 		} catch (FileNotFoundException ex) {
 			System.out.println("Unable to open file '" + queryFilePath + "'");
 		} catch (IOException ex) {
 			System.out.println("Error reading file '" + queryFilePath + "'");
 		}
-
-		System.out.println("Given Query: ");
-		int listSize = queryList.size();
-		for (int i = 0; i < listSize; ++i)
-			System.out.println(queryList.get(i));
-		System.out.println();
-
-		String[] filesToRead = queryList.get(1).split(" ");
-
-		// output fields + offsets
-		String output = queryList.get(0);
-		String[] data = output.split(" ");
-		FldSpec[] proj_list = new FldSpec[data.length];
-
-		for (int i = 0; i < data.length; i++) {
-			// System.out.println(data[i]);
-			String[] results = data[i].split("_");
-			if (getProjInfo(filesToRead, results[0]) == 1) {
-				proj_list[i] = new FldSpec(new RelSpec(RelSpec.outer), Integer.parseInt(results[1]));
-			} else {
-				proj_list[i] = new FldSpec(new RelSpec(RelSpec.innerRel), Integer.parseInt(results[1]));
-			}
-			// System.out.println(Arrays.toString(results));
-		}
-
-		System.out.println("Running query2c");
-		// variable queryList is [R_1 S_1, R S, R_2 1 S_2, AND, R_4 1 S_4]
-		int t1_cond1 = Integer.parseInt(queryList.get(2).split(" ")[0].trim().split("_")[1].trim()); // get 2 from R_2 1 S_2
-		int t2_cond1 = Integer.parseInt(queryList.get(2).split(" ")[2].trim().split("_")[1].trim()); // get 2 from R_2 1 S_2
-		int t1_cond2 = Integer.parseInt(queryList.get(4).split(" ")[0].trim().split("_")[1].trim()); // get 4 from R_4 1 S_4
-		int t2_cond2 = Integer.parseInt(queryList.get(4).split(" ")[2].trim().split("_")[1].trim()); // get 4 from R_4 1 S_4
-		int op1 = Integer.parseInt(queryList.get(2).split(" ")[1].trim()); // get 2 from R_2 1 S_2
-		int op2 = Integer.parseInt(queryList.get(4).split(" ")[1].trim()); // get 1 from R_4 1 S_4
-
-		// All condition column indices are zero based where as input is 1 based. So subtract 1 from t(i)cond(i)Col where i = {1, 2}
-		Tuple[] T1 = generateData(sourceDirPath + filesToRead[0] + ".csv");
-		Tuple[] T2 = generateData(sourceDirPath + filesToRead[1] + ".csv");
-		System.out.println("file 1 = " + filesToRead[0] + " file 2 = " + filesToRead[1]);
-
-		new IEjoin2t2predicates(T1, T2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).printResults();
 	}
 
 	public void printResults() throws FieldNumberOutOfBoundException, IOException, InvalidTypeException, InvalidTupleSizeException {
 		Tuple[] result = null;
-		try {
-			// result = this.run();
-			this.runForCount();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		result = this.run();
 
 		System.out.println("----------------------------------------------------");
 		System.out.println("------------------------RESULT----------------------");
 		System.out.println("----------------------------------------------------");
 
-		// for (Tuple myTuple : result) {
-		// System.out.format("%s\n", tupleToStr(myTuple, T1_size + T2_size - 4));
-		// }
+		for (int j = 0; j < result.length; j++)
+			System.out.format("%s\n", tupleToStr(result[j], T1_size + T2_size - 4));
 	}
 }
