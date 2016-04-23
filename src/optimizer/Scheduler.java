@@ -127,7 +127,8 @@ public class Scheduler {
 			if (D)
 				System.out.format("\tCompleted ie-join after %sms\n", System.currentTimeMillis() - start);
 			// Note the name of the intermediate table - table1table2.csv
-			exportTable(interRes, String.format("%s/%s%s.csv", dataDir, table1, table2)); // Assumption: All input files are in .csv format
+			// TODO: Waiting for changes in IE Join to accept export file path
+			// exportTable(interRes, String.format("%s/%s%s.csv", dataDir, table1, table2)); // Assumption: All input files are in .csv format
 			if (D)
 				System.out.format("Completed export of %s rows after %sms\n", interRes.length, System.currentTimeMillis() - start);
 
@@ -177,11 +178,17 @@ public class Scheduler {
 		}
 	}
 
-	private void exportTable(Tuple[] t, String outputFilePath) throws IOException, FieldNumberOutOfBoundException {
+	/**
+	 * Saves a Table to disk
+	 * @param t table to save
+	 * @param outputFilePath complete file path where to save
+	 * @param append if true data will be appended, else data will be overwritten
+	 */
+	public void exportTable(Tuple[] t, String outputFilePath, boolean append) throws IOException, FieldNumberOutOfBoundException {
 		if (t.length == 0)
 			return;
 		int cols = t[0].noOfFlds();
-		try (BufferedWriter w = new BufferedWriter(new FileWriter(outputFilePath))) {
+		try (BufferedWriter w = new BufferedWriter(new FileWriter(outputFilePath, append))) {
 			for (Tuple tuple : t) {
 				StringBuilder line = new StringBuilder();
 				for (int i = 1; i <= cols; i++) {
