@@ -28,6 +28,8 @@ import iterator.IEjoin2t2predicates;
  */
 public class Scheduler {
 
+	private boolean D = true; // A flag which controls printing of debug statements
+
 	/**
 	 * Orders the conditions based on a estimator
 	 * 
@@ -58,6 +60,9 @@ public class Scheduler {
 		SuperList<String> joinedTables = new SuperList<>(); // list of tables joined
 		HashMap<String, Integer> columnsCountPertable = new HashMap<>(); // number of columns in each table
 		for (IEJoinCondition condition : conditions) {
+			long start = System.currentTimeMillis();
+			if (D)
+				System.out.format("\nStarted condition, %s at %s\n", condition, start);
 			// condition looks like this: [C1: [T1, 2, 4, T2, 3], C2: [T1, 5, 1, T2, 6]
 			String table1 = condition.c1[0]; // Eg: T1
 			String table2 = condition.c1[3]; // Eg: T2
@@ -113,11 +118,23 @@ public class Scheduler {
 			columnsCountPertable.put(table2, countColumnsInTable(table2Path));
 
 			Tuple[] r1 = scanRelation(table1Path);
+			if (D)
+				System.out.format("\tCompleted scan of %s of %s rows after %sms\n", table1, r1.length, System.currentTimeMillis() - start);
 			Tuple[] r2 = scanRelation(table2Path);
+			if (D)
+				System.out.format("\tCompleted scan of %s of %s rows after %sms\n", table2, r2.length, System.currentTimeMillis() - start);
 			Tuple[] interRes = new IEjoin2t2predicates(r1, r2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).run();
+			if (D)
+				System.out.format("\tCompleted ie-join after %sms\n", System.currentTimeMillis() - start);
 			// Note the name of the intermediate table - table1table2.csv
 			exportTable(interRes, String.format("%s/%s%s.csv", dataDir, table1, table2)); // Assumption: All input files are in .csv format
-			r1 = null; r2 = null; interRes = null;
+			if (D)
+				System.out.format("Completed export of %s rows after %sms\n", interRes.length, System.currentTimeMillis() - start);
+
+			// free up memory
+			r1 = null;
+			r2 = null;
+			interRes = null;
 			System.gc();
 		}
 	}
@@ -190,8 +207,13 @@ public class Scheduler {
 	public static void main(String[] args) {
 		Scheduler s = new Scheduler();
 		try {
-			IEJoinCondition[] estimates = s.schedule("./data/query_8c.txt", "./data/");
-			s.complexIEJoinRunner(estimates, "./data/", "./data/res.csv");
+			long start = System.currentTimeMillis();
+			String query = "./data/phase4/query_8c.txt";
+			String dataDir = "./data/phase4/";
+			IEJoinCondition[] estimates = s.schedule(query, dataDir);
+			s.complexIEJoinRunner(estimates, dataDir, "./data/res.csv");
+			if (s.D)
+				System.out.format("Completed after: %sms\n", (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
