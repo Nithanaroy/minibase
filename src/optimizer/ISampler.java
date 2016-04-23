@@ -21,7 +21,6 @@ abstract class ISampler {
 	protected String relationFilePath = null;
 	protected int sampleSize = 0;
 	private AttrType[] Stypes;
-	private int id = 0; // unique ID assigned to each tuple. This is incremented as tuples are created
 
 	/**
 	 * Instantiate a sampler
@@ -37,7 +36,7 @@ abstract class ISampler {
 		try (BufferedReader br = new BufferedReader(new FileReader(relationFilePath))) {
 			String line = br.readLine();
 			int cols = line.split(",").length; // Assumption: input file is CSV
-			Stypes = new AttrType[cols + 2]; // Minibase reserves the first column for rid and 2nd column for our own ID
+			Stypes = new AttrType[cols + 3]; // Minibase reserves the first column and 2 extra cols for self computation
 			for (int i = 0; i < Stypes.length; i++) {
 				Stypes[i] = new AttrType(AttrType.attrInteger); // Assumption: all are fields are integers
 			}
@@ -65,9 +64,8 @@ abstract class ISampler {
 		String[] fields = input.split(",");
 		Tuple t = new Tuple();
 		t.setHdr((short) Stypes.length, Stypes, null);
-		t.setIntFld(1, id++);
-		for (int i = 2; i < Stypes.length; i++) {
-			t.setIntFld(i, Integer.parseInt(fields[i - 2]));
+		for (int i = 1; i < fields.length; i++) {
+			t.setIntFld(i, Integer.parseInt(fields[i - 1]));
 		}
 		return t;
 	}
