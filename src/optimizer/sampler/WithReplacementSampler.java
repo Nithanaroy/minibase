@@ -1,4 +1,4 @@
-package optimizer;
+package optimizer.sampler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +19,7 @@ public class WithReplacementSampler extends ISampler {
 	}
 
 	@Override
-	Tuple[] getSample()
+	public Tuple[] getSample()
 			throws IOException, NumberFormatException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException {
 		/**
 		 * Get the number of lines in the file, L

@@ -1,4 +1,4 @@
-package optimizer;
+package optimizer.sampler;
 
 import java.io.IOException;
 
@@ -18,6 +18,9 @@ public class SamplerFactory {
 
 		case WITHOUT_REPLACEMENT:
 			return new WithoutReplacementSampler(inputRealation, sampleSize);
+
+		case UNIFORM:
+			return new UniformSampler(inputRealation, sampleSize);
 
 		default:
 			return new WithReplacementSampler(inputRealation, sampleSize);

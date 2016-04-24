@@ -1,4 +1,4 @@
-package optimizer;
+package optimizer.sampler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,7 +16,7 @@ import heap.Tuple;
  * @author nitinpasumarthy
  *
  */
-abstract class ISampler {
+public abstract class ISampler {
 
 	protected String relationFilePath = null;
 	protected int sampleSize = 0;
@@ -44,7 +44,7 @@ abstract class ISampler {
 
 	}
 
-	abstract Tuple[] getSample()
+	public abstract Tuple[] getSample()
 			throws IOException, NumberFormatException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException;
 
 	public final AttrType[] getStypes() {

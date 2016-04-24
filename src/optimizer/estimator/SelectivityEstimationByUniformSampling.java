@@ -1,4 +1,4 @@
-package optimizer;
+package optimizer.estimator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,10 +8,12 @@ import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Tuple;
 import iterator.IEjoin2t2predicates;
+import optimizer.sampler.SamplerFactory;
+import optimizer.sampler.SamplerType;
 
-public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator {
+public class SelectivityEstimationByUniformSampling extends ISelectivityEstimator {
 
-	public SelectivityEstimationByRandomSampling(String relationsDir, String[][] conditions) {
+	public SelectivityEstimationByUniformSampling(String relationsDir, String[][] conditions) {
 		super(relationsDir, conditions);
 	}
 
@@ -31,8 +33,8 @@ public class SelectivityEstimationByRandomSampling extends ISelectivityEstimator
 		// Each condition is of the form - [R,3,4,S,3]
 		String relation1Path = this.getRelationsDir() + "//" + this.getConditions()[0][0] + ".csv"; // Assumption: Each relation file is a .csv file
 		String relation2Path = this.getRelationsDir() + "//" + this.getConditions()[0][3] + ".csv";
-		Tuple[] r1 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, relation1Path, r1SampleSize).getSample();
-		Tuple[] r2 = SamplerFactory.getSampler(SamplerType.WITH_REPLACEMENT, relation2Path, r2SampleSize).getSample();
+		Tuple[] r1 = SamplerFactory.getSampler(SamplerType.UNIFORM, relation1Path, r1SampleSize).getSample();
+		Tuple[] r2 = SamplerFactory.getSampler(SamplerType.UNIFORM, relation2Path, r2SampleSize).getSample();
 
 		// System.out.println("Original R1");
 		// ISampler.printTable(r1);

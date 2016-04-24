@@ -20,6 +20,8 @@ import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Tuple;
 import iterator.IEjoin2t2predicates;
+import optimizer.estimator.Estimator;
+import optimizer.estimator.SelectivityEstimatorFactory;
 
 /**
  * Schedules the way a multiple IE join should excute based on Sampling estimation
@@ -35,10 +37,11 @@ public class Scheduler {
 	 * 
 	 * @param queryFile complete path of the query file
 	 * @param dataDir path to the directory where all relation files are found
+	 * @param sampleSize number of tuples to sample for creating the estimate
 	 * @return
 	 */
-	public IEJoinCondition[] schedule(String queryFile, String dataDir) throws FileNotFoundException, IOException, NumberFormatException,
-			InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException {
+	public IEJoinCondition[] schedule(String queryFile, String dataDir, int sampleSize) throws FileNotFoundException, IOException,
+			NumberFormatException, InvalidTypeException, InvalidTupleSizeException, FieldNumberOutOfBoundException {
 		HashMap<String, String[][]> query = QueryParser.parse(queryFile);
 
 		int cconditions = query.get("conditions").length;
@@ -46,7 +49,8 @@ public class Scheduler {
 		int k = 0, size;
 		for (int i = 0; i < cconditions; i += 2, k++) {
 			String[][] selectedConditions = new String[][] { query.get("conditions")[i], query.get("conditions")[i + 1] };
-			size = SelectivityEstimatorFactory.getEstimator(Estimator.BY_RANDOM_SAMPLING, dataDir, selectedConditions).estimate(250, 250);
+			size = SelectivityEstimatorFactory.getEstimator(Estimator.UNIFORM_SAMPLING, dataDir, selectedConditions).estimate(sampleSize,
+					sampleSize);
 			estimates[k] = new IEJoinCondition(query.get("conditions")[i], query.get("conditions")[i + 1], size);
 			System.out.format("%2d) %s\n", k, estimates[k]);
 		}
@@ -123,19 +127,15 @@ public class Scheduler {
 			Tuple[] r2 = scanRelation(table2Path);
 			if (D)
 				System.out.format("\tCompleted scan of %s of %s rows after %sms\n", table2, r2.length, System.currentTimeMillis() - start);
-			Tuple[] interRes = new IEjoin2t2predicates(r1, r2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2).run();
+			// Note the name of the intermediate table - table1table2.csv
+			new IEjoin2t2predicates(r1, r2, op1, op2, t1_cond1, t2_cond1, t1_cond2, t2_cond2)
+					.run(String.format("%s/%s%s.csv", dataDir, table1, table2));
 			if (D)
 				System.out.format("\tCompleted ie-join after %sms\n", System.currentTimeMillis() - start);
-			// Note the name of the intermediate table - table1table2.csv
-			// TODO: Waiting for changes in IE Join to accept export file path
-			// exportTable(interRes, String.format("%s/%s%s.csv", dataDir, table1, table2)); // Assumption: All input files are in .csv format
-			if (D)
-				System.out.format("Completed export of %s rows after %sms\n", interRes.length, System.currentTimeMillis() - start);
 
 			// free up memory
 			r1 = null;
 			r2 = null;
-			interRes = null;
 			System.gc();
 		}
 	}
@@ -144,7 +144,9 @@ public class Scheduler {
 			throws InvalidTypeException, InvalidTupleSizeException, IOException, NumberFormatException, FieldNumberOutOfBoundException {
 		List<Tuple> relation = new ArrayList<Tuple>();
 		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(relationFilePath))) {
-			String line = bufferedReader.readLine().trim();
+			String line = bufferedReader.readLine();
+			if (line == null) // Happens when file is empty
+				return new Tuple[0];
 			int columnsCount = line.split(",").length + 3; // Minibase reserves the first col and 2 more cols for self computation
 
 			AttrType[] Stypes = new AttrType[columnsCount];
@@ -174,19 +176,27 @@ public class Scheduler {
 	 */
 	private int countColumnsInTable(String relationFilePath) throws FileNotFoundException, IOException {
 		try (BufferedReader br = new BufferedReader(new FileReader(relationFilePath))) {
-			return br.readLine().split(",").length; // Assumption: Given file is a CSV
+			String line = br.readLine();
+			if (line == null)
+				return 0;
+			return line.split(",").length; // Assumption: Given file is a CSV
 		}
 	}
 
 	/**
 	 * Saves a Table to disk
+	 * Create an empty file if records to save are zero
 	 * @param t table to save
 	 * @param outputFilePath complete file path where to save
 	 * @param append if true data will be appended, else data will be overwritten
 	 */
-	public void exportTable(Tuple[] t, String outputFilePath, boolean append) throws IOException, FieldNumberOutOfBoundException {
-		if (t.length == 0)
-			return;
+	public static void exportTable(Tuple[] t, String outputFilePath, boolean append) throws IOException, FieldNumberOutOfBoundException {
+		if (t.length == 0) {
+			// create an empty file and return
+			try (BufferedWriter w = new BufferedWriter(new FileWriter(outputFilePath, false))) {
+				return;
+			}
+		}
 		int cols = t[0].noOfFlds();
 		try (BufferedWriter w = new BufferedWriter(new FileWriter(outputFilePath, append))) {
 			for (Tuple tuple : t) {
@@ -217,7 +227,9 @@ public class Scheduler {
 			long start = System.currentTimeMillis();
 			String query = "./data/phase4/query_8c.txt";
 			String dataDir = "./data/phase4/";
-			IEJoinCondition[] estimates = s.schedule(query, dataDir);
+			// String query = "./data/query_8c.txt";
+			// String dataDir = "./data/";
+			IEJoinCondition[] estimates = s.schedule(query, dataDir, 500);
 			s.complexIEJoinRunner(estimates, dataDir, "./data/res.csv");
 			if (s.D)
 				System.out.format("Completed after: %sms\n", (System.currentTimeMillis() - start));

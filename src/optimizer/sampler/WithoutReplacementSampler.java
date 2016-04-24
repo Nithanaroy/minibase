@@ -1,4 +1,4 @@
-package optimizer;
+package optimizer.sampler;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ public class WithoutReplacementSampler extends ISampler {
 	}
 
 	@Override
-	Tuple[] getSample() {
+	public Tuple[] getSample() {
 		// TODO Auto-generated method stub
 		return null;
 	}
